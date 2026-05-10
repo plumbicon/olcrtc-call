@@ -1,0 +1,90 @@
+name: OlcRTCClient
+options:
+  minimumXcodeGenVersion: 2.38.0
+settings:
+  base:
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: 5.9
+    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 1
+packages:
+  OlcRTCApple:
+    path: .
+  Tun2SocksKit:
+    url: https://github.com/EbrahimTahernejad/Tun2SocksKit.git
+    branch: main
+targets:
+  OlcRTCClient iOS:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Sources/OlcRTCClientiOS
+    dependencies:
+      - package: OlcRTCApple
+        product: OlcRTCClientKit
+      - target: OlcRTCPacketTunnel
+        embed: true
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: community.openlibre.olcrtc.ios
+        INFOPLIST_KEY_CFBundleDisplayName: olcRTC
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        CODE_SIGN_ENTITLEMENTS: Sources/OlcRTCClientiOS/OlcRTCClientiOS.entitlements
+  OlcRTCPacketTunnel:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Sources/OlcRTCPacketTunnel
+    dependencies:
+      - package: OlcRTCApple
+        product: OlcRTCClientKit
+      - package: Tun2SocksKit
+        product: Tun2SocksKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: community.openlibre.olcrtc.ios.PacketTunnel
+        INFOPLIST_FILE: Sources/OlcRTCPacketTunnel/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Sources/OlcRTCPacketTunnel/OlcRTCPacketTunnel.entitlements
+        APPLICATION_EXTENSION_API_ONLY: YES
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+  OlcRTCClient macOS:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: Sources/OlcRTCClientMac
+    dependencies:
+      - package: OlcRTCApple
+        product: OlcRTCClientKit
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: community.openlibre.olcrtc.macos
+        INFOPLIST_KEY_CFBundleDisplayName: olcRTC
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+schemes:
+  OlcRTCClient iOS:
+    build:
+      targets:
+        OlcRTCClient iOS: all
+        OlcRTCPacketTunnel: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+  OlcRTCClient macOS:
+    build:
+      targets:
+        OlcRTCClient macOS: all
+    run:
+      config: Debug
+      environmentVariables:
+        OLCRTC_REPO_ROOT: ${PROJECT_DIR}/..
+    archive:
+      config: Release

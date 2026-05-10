@@ -1,0 +1,83 @@
+import Foundation
+
+public struct OlcRTCStartOptions: Equatable {
+    public var carrierName: String
+    public var transportName: String
+    public var roomID: String
+    public var clientID: String
+    public var keyHex: String
+    public var socksPort: Int
+    public var socksUser: String
+    public var socksPass: String
+    public var dnsServer: String
+    public var debugLogging: Bool
+    public var vp8FPS: Int
+    public var vp8BatchSize: Int
+    public var seiFPS: Int
+    public var seiBatchSize: Int
+    public var seiFragmentSize: Int
+    public var seiAckTimeoutMillis: Int
+    public var startTimeoutMillis: Int
+
+    public init(profile: ConnectionProfile) {
+        carrierName = profile.carrier.rawValue
+        transportName = profile.transport.rawValue
+        roomID = profile.roomID
+        clientID = profile.clientID
+        keyHex = profile.keyHex
+        socksPort = profile.socksPort
+        socksUser = profile.socksUser
+        socksPass = profile.socksPass
+        dnsServer = profile.dnsServer
+        debugLogging = profile.debugLogging
+        vp8FPS = profile.vp8FPS
+        vp8BatchSize = profile.vp8BatchSize
+        seiFPS = profile.seiFPS
+        seiBatchSize = profile.seiBatchSize
+        seiFragmentSize = profile.seiFragmentSize
+        seiAckTimeoutMillis = profile.seiAckTimeoutMillis
+        startTimeoutMillis = profile.startTimeoutMillis
+    }
+}
+
+public enum OlcRTCEngineError: LocalizedError, Equatable {
+    case frameworkMissing
+    case invalidProfile(String)
+    case cliMissing(String)
+    case unsupportedOption(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .frameworkMissing:
+            "Mobile.xcframework is not linked yet."
+        case .invalidProfile(let message):
+            message
+        case .cliMissing(let message):
+            message
+        case .unsupportedOption(let message):
+            message
+        }
+    }
+}
+
+public protocol OlcRTCEngine: AnyObject {
+    var events: AsyncStream<String> { get }
+    var isRunning: Bool { get async }
+    var activeSocksPort: Int? { get async }
+
+    func start(options: OlcRTCStartOptions) async throws
+    func waitReady(timeoutMillis: Int) async throws
+    func stop() async
+}
+
+public enum OlcRTCEngineFactory {
+    public static func makeDefault() -> OlcRTCEngine {
+        #if canImport(Mobile)
+        return GomobileOlcRTCEngine()
+        #elseif os(macOS)
+        return ProcessOlcRTCEngine()
+        #else
+        return GomobileOlcRTCEngine()
+        #endif
+    }
+}

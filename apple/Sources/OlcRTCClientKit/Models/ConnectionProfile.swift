@@ -1,0 +1,219 @@
+import Foundation
+
+public enum Carrier: String, CaseIterable, Codable, Identifiable {
+    case telemost
+    case jazz
+    case wbstream
+
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .telemost: "Telemost"
+        case .jazz: "Jazz"
+        case .wbstream: "WBStream"
+        }
+    }
+}
+
+public enum Transport: String, CaseIterable, Codable, Identifiable {
+    case vp8channel
+    case datachannel
+    case seichannel
+    case videochannel
+
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .vp8channel: "VP8 channel"
+        case .datachannel: "Data channel"
+        case .seichannel: "SEI channel"
+        case .videochannel: "Video channel"
+        }
+    }
+}
+
+public struct ConnectionProfile: Codable, Equatable, Identifiable {
+    public static let defaultStartTimeoutMillis = 60_000
+
+    public var id: UUID
+    public var subscription: SubscriptionMetadata?
+    public var name: String
+    public var carrier: Carrier
+    public var transport: Transport
+    public var roomID: String
+    public var clientID: String
+    public var keyHex: String
+    public var socksPort: Int
+    public var socksUser: String
+    public var socksPass: String
+    public var dnsServer: String
+    public var debugLogging: Bool
+    public var vp8FPS: Int
+    public var vp8BatchSize: Int
+    public var seiFPS: Int
+    public var seiBatchSize: Int
+    public var seiFragmentSize: Int
+    public var seiAckTimeoutMillis: Int
+    public var startTimeoutMillis: Int
+
+    public init(
+        id: UUID = UUID(),
+        subscription: SubscriptionMetadata? = nil,
+        name: String,
+        carrier: Carrier = .wbstream,
+        transport: Transport = .vp8channel,
+        roomID: String = "",
+        clientID: String = "",
+        keyHex: String = "",
+        socksPort: Int = 10808,
+        socksUser: String = "",
+        socksPass: String = "",
+        dnsServer: String = "1.1.1.1:53",
+        debugLogging: Bool = false,
+        vp8FPS: Int = 60,
+        vp8BatchSize: Int = 8,
+        seiFPS: Int = 60,
+        seiBatchSize: Int = 64,
+        seiFragmentSize: Int = 900,
+        seiAckTimeoutMillis: Int = 2_000,
+        startTimeoutMillis: Int = Self.defaultStartTimeoutMillis
+    ) {
+        self.id = id
+        self.subscription = subscription
+        self.name = name
+        self.carrier = carrier
+        self.transport = transport
+        self.roomID = roomID
+        self.clientID = clientID
+        self.keyHex = keyHex
+        self.socksPort = socksPort
+        self.socksUser = socksUser
+        self.socksPass = socksPass
+        self.dnsServer = dnsServer
+        self.debugLogging = debugLogging
+        self.vp8FPS = vp8FPS
+        self.vp8BatchSize = vp8BatchSize
+        self.seiFPS = seiFPS
+        self.seiBatchSize = seiBatchSize
+        self.seiFragmentSize = seiFragmentSize
+        self.seiAckTimeoutMillis = seiAckTimeoutMillis
+        self.startTimeoutMillis = startTimeoutMillis
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case subscription
+        case name
+        case carrier
+        case transport
+        case roomID
+        case clientID
+        case keyHex
+        case socksPort
+        case socksUser
+        case socksPass
+        case dnsServer
+        case debugLogging
+        case vp8FPS
+        case vp8BatchSize
+        case seiFPS
+        case seiBatchSize
+        case seiFragmentSize
+        case seiAckTimeoutMillis
+        case startTimeoutMillis
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        subscription = try container.decodeIfPresent(SubscriptionMetadata.self, forKey: .subscription)
+        name = try container.decode(String.self, forKey: .name)
+        carrier = try container.decodeIfPresent(Carrier.self, forKey: .carrier) ?? .wbstream
+        transport = try container.decodeIfPresent(Transport.self, forKey: .transport) ?? .vp8channel
+        roomID = try container.decodeIfPresent(String.self, forKey: .roomID) ?? ""
+        clientID = try container.decodeIfPresent(String.self, forKey: .clientID) ?? ""
+        keyHex = try container.decodeIfPresent(String.self, forKey: .keyHex) ?? ""
+        socksPort = try container.decodeIfPresent(Int.self, forKey: .socksPort) ?? 10808
+        socksUser = try container.decodeIfPresent(String.self, forKey: .socksUser) ?? ""
+        socksPass = try container.decodeIfPresent(String.self, forKey: .socksPass) ?? ""
+        dnsServer = try container.decodeIfPresent(String.self, forKey: .dnsServer) ?? "1.1.1.1:53"
+        debugLogging = try container.decodeIfPresent(Bool.self, forKey: .debugLogging) ?? false
+        vp8FPS = try container.decodeIfPresent(Int.self, forKey: .vp8FPS) ?? 60
+        vp8BatchSize = try container.decodeIfPresent(Int.self, forKey: .vp8BatchSize) ?? 8
+        seiFPS = try container.decodeIfPresent(Int.self, forKey: .seiFPS) ?? 60
+        seiBatchSize = try container.decodeIfPresent(Int.self, forKey: .seiBatchSize) ?? 64
+        seiFragmentSize = try container.decodeIfPresent(Int.self, forKey: .seiFragmentSize) ?? 900
+        seiAckTimeoutMillis = try container.decodeIfPresent(Int.self, forKey: .seiAckTimeoutMillis) ?? 2_000
+        startTimeoutMillis = try container.decodeIfPresent(Int.self, forKey: .startTimeoutMillis)
+            ?? Self.defaultStartTimeoutMillis
+    }
+
+    public static var empty: ConnectionProfile {
+        ConnectionProfile(name: "New profile")
+    }
+
+    public func normalizedForCurrentDefaults() -> ConnectionProfile {
+        var profile = self
+        if profile.startTimeoutMillis < Self.defaultStartTimeoutMillis {
+            profile.startTimeoutMillis = Self.defaultStartTimeoutMillis
+        }
+        return profile
+    }
+}
+
+public struct SubscriptionMetadata: Codable, Equatable, Identifiable {
+    public var id: UUID
+    public var name: String
+    public var sourceURL: String?
+    public var updatedAtUnix: TimeInterval?
+    public var refreshInterval: String?
+    public var color: String?
+    public var icon: String?
+    public var used: String?
+    public var available: String?
+    public var nodeColor: String?
+    public var nodeIcon: String?
+    public var nodeUsed: String?
+    public var nodeAvailable: String?
+    public var nodeIP: String?
+    public var nodeComment: String?
+    public var nodeURI: String?
+
+    public init(
+        id: UUID = UUID(),
+        name: String,
+        sourceURL: String? = nil,
+        updatedAtUnix: TimeInterval? = nil,
+        refreshInterval: String? = nil,
+        color: String? = nil,
+        icon: String? = nil,
+        used: String? = nil,
+        available: String? = nil,
+        nodeColor: String? = nil,
+        nodeIcon: String? = nil,
+        nodeUsed: String? = nil,
+        nodeAvailable: String? = nil,
+        nodeIP: String? = nil,
+        nodeComment: String? = nil,
+        nodeURI: String? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.sourceURL = sourceURL
+        self.updatedAtUnix = updatedAtUnix
+        self.refreshInterval = refreshInterval
+        self.color = color
+        self.icon = icon
+        self.used = used
+        self.available = available
+        self.nodeColor = nodeColor
+        self.nodeIcon = nodeIcon
+        self.nodeUsed = nodeUsed
+        self.nodeAvailable = nodeAvailable
+        self.nodeIP = nodeIP
+        self.nodeComment = nodeComment
+        self.nodeURI = nodeURI
+    }
+}
