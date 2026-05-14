@@ -253,7 +253,5 @@ go.work.sum
 # .vscode/
 build/
 GEMINI.md
-code/package-lock.json
-olcrtc
-!cmd/olcrtc/
-!cmd/olcrtc/main_test.go
+olcrtc/code/package-lock.json
+/olcrtc/olcrtc

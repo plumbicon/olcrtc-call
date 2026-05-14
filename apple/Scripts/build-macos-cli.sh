@@ -2,10 +2,12 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-OUT="$ROOT_DIR/apple/.build/olcrtc-macos"
+APPLE_DIR="$ROOT_DIR/apple"
+OLCRTC_DIR="$ROOT_DIR/olcrtc"
+OUT="$APPLE_DIR/.build/olcrtc-macos"
 
 mkdir -p "$(dirname "$OUT")"
-cd "$ROOT_DIR"
+cd "$OLCRTC_DIR"
 
 go build \
   -trimpath \

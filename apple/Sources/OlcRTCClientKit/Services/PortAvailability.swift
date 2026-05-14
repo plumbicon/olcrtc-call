@@ -5,15 +5,15 @@ import Darwin
 #endif
 
 public enum PortAvailability {
-    public static func nextAvailableTCPPort(startingAt preferredPort: Int = 10808) -> Int {
+    public static func nextAvailableTCPPort(startingAt preferredPort: Int = 10808, host: String = "127.0.0.1") -> Int {
         let start = min(max(preferredPort, 1), 65_535)
 
-        for port in start...65_535 where isLocalTCPPortAvailable(port) {
+        for port in start...65_535 where isLocalTCPPortAvailable(port, host: host) {
             return port
         }
 
         if start > 1 {
-            for port in 1..<start where isLocalTCPPortAvailable(port) {
+            for port in 1..<start where isLocalTCPPortAvailable(port, host: host) {
                 return port
             }
         }
@@ -21,7 +21,7 @@ public enum PortAvailability {
         return preferredPort
     }
 
-    public static func isLocalTCPPortAvailable(_ port: Int) -> Bool {
+    public static func isLocalTCPPortAvailable(_ port: Int, host: String = "127.0.0.1") -> Bool {
         guard (1...65_535).contains(port) else {
             return false
         }
@@ -38,7 +38,7 @@ public enum PortAvailability {
         address.sin_family = sa_family_t(AF_INET)
         address.sin_port = in_port_t(port).bigEndian
 
-        guard inet_pton(AF_INET, "127.0.0.1", &address.sin_addr) == 1 else {
+        guard inet_pton(AF_INET, host, &address.sin_addr) == 1 else {
             return false
         }
 

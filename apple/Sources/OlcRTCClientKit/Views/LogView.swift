@@ -1,4 +1,9 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 public struct LogView: View {
     let logs: [String]
@@ -19,6 +24,10 @@ public struct LogView: View {
                     .font(.headline)
                     #endif
                 Spacer()
+                Button(action: copyLogs) {
+                    Label("Copy", systemImage: "doc.on.doc")
+                }
+                .disabled(logs.isEmpty)
                 Button(action: onClear) {
                     Label("Clear", systemImage: "trash")
                 }
@@ -55,6 +64,16 @@ public struct LogView: View {
         }
         #if os(iOS)
         .font(.subheadline)
+        #endif
+    }
+
+    private func copyLogs() {
+        let text = logs.joined(separator: "\n")
+        #if os(iOS)
+        UIPasteboard.general.string = text
+        #elseif os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
         #endif
     }
 }

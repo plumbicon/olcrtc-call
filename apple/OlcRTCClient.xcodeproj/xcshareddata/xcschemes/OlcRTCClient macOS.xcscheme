@@ -66,7 +66,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "OLCRTC_REPO_ROOT"
-            value = "${PROJECT_DIR}/.."
+            value = "${PROJECT_DIR}/../olcrtc"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

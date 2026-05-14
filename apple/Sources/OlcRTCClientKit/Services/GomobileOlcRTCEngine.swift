@@ -8,6 +8,9 @@ public final class GomobileOlcRTCEngine: OlcRTCEngine {
     private let eventPair = AsyncStream<String>.makeStream(of: String.self)
     private let lock = NSLock()
     private var currentSocksPort: Int?
+    #if canImport(Mobile)
+    private var logRelay: MobileLogRelay?
+    #endif
     private let maxPortRetries = 8
 
     public init() {}
@@ -75,7 +78,15 @@ public final class GomobileOlcRTCEngine: OlcRTCEngine {
 
     #if canImport(Mobile)
     private func startMobile(options: OlcRTCStartOptions) async throws {
+        let relay = MobileLogRelay { [weak self] message in
+            self?.emit(message)
+        }
+        withLock {
+            logRelay = relay
+        }
+
         try await Task.detached {
+            MobileSetLogWriter(relay)
             MobileSetProviders()
             MobileSetDebug(options.debugLogging)
             MobileSetTransport(options.transportName)
@@ -121,10 +132,14 @@ public final class GomobileOlcRTCEngine: OlcRTCEngine {
         #if canImport(Mobile)
         await Task.detached {
             MobileStop()
+            MobileSetLogWriter(nil)
         }.value
         #endif
         withLock {
             currentSocksPort = nil
+            #if canImport(Mobile)
+            logRelay = nil
+            #endif
         }
 
         emit("olcRTC stopped.")
@@ -163,3 +178,22 @@ public final class GomobileOlcRTCEngine: OlcRTCEngine {
         return body()
     }
 }
+
+#if canImport(Mobile)
+private final class MobileLogRelay: NSObject, MobileLogWriterProtocol {
+    private let onLog: (String) -> Void
+
+    init(onLog: @escaping (String) -> Void) {
+        self.onLog = onLog
+    }
+
+    func writeLog(_ msg: String?) {
+        guard let msg else { return }
+        msg
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .forEach(onLog)
+    }
+}
+#endif

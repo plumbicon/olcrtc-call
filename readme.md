@@ -1,189 +1,258 @@
-# olcRTC
+# olcRTC Call
 
-olcRTC builds encrypted client/server tunnels over WebRTC-based carriers. The
-core runtime is written in Go. Desktop and Apple mobile UI live in `apple/`.
+macOS/iOS-клиент для olcRTC, собранный вокруг Go-runtime.
 
-## Current Status
+Go-runtime остается источником сетевой логики. Apple-часть отвечает за нативный
+интерфейс, хранение профилей, Keychain, системный прокси/VPN-интеграцию и
+упаковку приложений.
 
-The project is beta software.
+## Структура
 
-- Go CLI supports server/client modes, profile URI/subscription formats, and
-  local SOCKS5 client access.
-- macOS has a SwiftUI app that bundles the Go CLI helper, starts the local
-  SOCKS5 endpoint, and can enable the selected macOS system SOCKS proxy.
-- iOS has a SwiftUI app plus a `NetworkExtension` packet tunnel target. The
-  packet tunnel starts the gomobile olcRTC runtime and bridges device traffic to
-  the local SOCKS5 endpoint with `Tun2SocksKit` / `hev-socks5-tunnel`.
-- iOS simulator builds work for development when the app is signed normally
-  with simulated entitlements. Real iPhone builds require Apple Developer
-  provisioning profiles with the Network Extension `packet-tunnel-provider`
-  entitlement for both the app and the packet tunnel extension.
-- The iOS packet tunnel currently focuses on TCP and DNS-over-tunnel behavior.
-  Arbitrary UDP is not yet a complete production path.
+- `olcrtc/`: Go-runtime, CLI, тесты, data-файлы и gomobile-пакет.
+- `apple/Package.swift`: SwiftPM-пакет с общим кодом приложения.
+- `apple/project.yml`: основной файл XcodeGen для app/extension targets.
+- `apple/OlcRTCClient.xcodeproj`: сгенерированный Xcode-проект.
+- `apple/Sources/OlcRTCClientKit`: общие SwiftUI views, models, stores,
+  parsers и runtime managers.
+- `apple/Sources/OlcRTCClientMac`: точка входа macOS-приложения.
+- `apple/Sources/OlcRTCClientiOS`: точка входа iOS-приложения и entitlements.
+- `apple/Sources/OlcRTCPacketTunnel`: iOS Packet Tunnel extension.
+- `apple/Scripts`: скрипты сборки.
 
-## Repository Layout
+Локальные результаты сборки не коммитятся:
 
-- `cmd/olcrtc`: Go CLI entry point.
-- `internal`: tunnel runtime, carriers, transports, crypto, SOCKS client/server,
-  and tests.
-- `mobile`: gomobile-compatible API used by Apple/iOS clients.
-- `docs`: protocol, settings, URI, subscription, and manual usage docs.
-- `apple`: native macOS/iOS SwiftUI clients, XcodeGen project spec, scripts, and
-  iOS packet tunnel extension.
-- `script`: helper scripts for CLI/server/container workflows.
-- `data`: default name data used by the runtime.
+- `apple/.build/`
+- `apple/.derived-data/`
+- `apple/.swiftpm/`
+- `apple/Frameworks/Mobile.xcframework`
 
-Generated artifacts are intentionally not tracked: `apple/.build`,
-`apple/.derived-data`, `apple/.swiftpm`, and
-`apple/Frameworks/Mobile.xcframework`.
+## Требования
 
-## General CLI Build
+- macOS 13 или новее.
+- Go.
+- Xcode или Command Line Tools для macOS/SwiftPM-сборок.
+- Полный Xcode с iOS SDK для iOS-сборок.
+- `gomobile`.
+- `xcodegen`, если нужно пересоздавать `apple/OlcRTCClient.xcodeproj`.
+- Sideloadly, если нужно установить неподписанный local-SOCKS IPA на iPhone.
 
-Install Mage once:
+Если Xcode только что установлен:
 
 ```bash
-go install github.com/magefile/mage@latest
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -license accept
 ```
 
-Common commands:
+## Go-runtime
 
 ```bash
-mage build      # build CLI + UI artifacts used by the Go workflow
-mage buildCLI   # build CLI only
-mage cross      # cross-compile for Linux, Windows, and Darwin
-mage mobile     # build Android AAR through gomobile
-mage test       # run tests
-mage lint       # run linters
-mage clean      # remove generated build outputs
+cd olcrtc
+go test ./...
 ```
 
-Container image helpers:
+## Сборка macOS-клиента
 
-```bash
-mage podman
-mage docker
-```
-
-## Build the macOS App
-
-Requirements:
-
-- macOS 13 or newer
-- Go toolchain
-- Xcode or Command Line Tools with SwiftPM
-
-Build and launch:
+Из корня репозитория:
 
 ```bash
 ./apple/Scripts/build-macos-app.sh
 open ./apple/.build/olcRTC.app
 ```
 
-The script builds:
+Скрипт собирает:
 
-- `apple/.build/olcrtc-macos`: bundled Go CLI helper
-- `apple/.build/olcRTC.app`: SwiftUI macOS app bundle
+- `apple/.build/olcrtc-macos`: Go CLI helper.
+- `apple/.build/olcRTC.app`: запускаемый macOS app bundle.
 
-The macOS app stores profile secrets in Keychain. Non-secret profile metadata is
-stored in `UserDefaults`. When the tunnel starts successfully, the Events pane
-should show the local SOCKS address and, if enabled, the selected macOS network
-service proxy state.
+macOS-приложение хранит секреты профиля в Keychain. JSON-профиль в
+`UserDefaults` не содержит ключ шифрования или SOCKS-пароль.
 
-If the app is force-quit while the system proxy is enabled, turn it off manually
-if needed:
+При успешном старте в Events должно появиться:
+
+```text
+SOCKS proxy is ready at 127.0.0.1:<port>.
+System SOCKS proxy enabled for <service> on 127.0.0.1:<port>.
+```
+
+Если приложение было принудительно закрыто, пока системный SOCKS-прокси macOS
+включен:
 
 ```bash
 networksetup -setsocksfirewallproxystate "Wi-Fi" off
 ```
 
-## Test the iOS App in Simulator
+## Общая iOS-сборка
 
-Requirements:
+Собрать gomobile framework:
 
-- Full Xcode, not only Command Line Tools
-- An installed iOS simulator runtime
-- Go toolchain
-- `gomobile`; the script installs it if missing
-- `xcodegen` is recommended; the script regenerates the Xcode project when it
-  is installed
+```bash
+./apple/Scripts/build-xcframework.sh
+```
 
-Run:
+Запустить iOS-приложение в Simulator:
 
 ```bash
 ./apple/Scripts/run-ios-simulator.sh
 ```
 
-The script:
-
-1. Ensures Xcode and the iOS SDK are usable.
-2. Runs `gomobile init`.
-3. Builds `apple/Frameworks/Mobile.xcframework`.
-4. Regenerates `apple/OlcRTCClient.xcodeproj` when `xcodegen` is available.
-5. Builds the `OlcRTCClient iOS` scheme with normal local simulator signing.
-6. Installs and launches the app on a booted or newly booted simulator.
-
-Do not build the simulator app with `CODE_SIGNING_ALLOWED=NO` when testing the
-VPN path. The packet tunnel extension needs simulated Network Extension
-entitlements, otherwise `startVPNTunnel` can fail with `IPC failed`.
-
-To build without launching:
+Только собрать iOS-приложение для Simulator, без запуска:
 
 ```bash
 ./apple/Scripts/build-ios-app.sh
 ```
 
-## Test the iOS App on a Real iPhone
+## Неподписанный iOS-клиент
 
-Open the Xcode project:
+Для установки local-SOCKS версии на реальный iPhone без Network Extension
+entitlement:
+
+```bash
+./apple/Scripts/build-ios-unsigned-local-ipa.sh
+```
+
+Результат:
+
+```text
+apple/.build/ios-unsigned-local/OlcRTCClient-unsigned-local.ipa
+```
+
+Этот IPA собирается с `LOCAL_SOCKS_ONLY`: в нем остается local SOCKS режим, но
+удаляется Packet Tunnel extension. Это нужно, чтобы пакет можно было затем
+подписать обычным Apple ID через Sideloadly без Network Extension entitlement.
+
+При старте local SOCKS на iOS в Events должно появиться:
+
+```text
+iOS background runtime is active for local SOCKS.
+```
+
+## Установка неподписанного IPA через Sideloadly
+
+1. Установить Sideloadly с официального сайта: `https://sideloadly.io/`.
+2. Подключить iPhone к Mac по USB и нажать Trust/Доверять на телефоне, если iOS
+   спросит.
+3. Собрать IPA:
+
+   ```bash
+   ./apple/Scripts/build-ios-unsigned-local-ipa.sh
+   ```
+
+4. Открыть Sideloadly.
+5. Перетащить файл
+   `apple/.build/ios-unsigned-local/OlcRTCClient-unsigned-local.ipa` в окно
+   Sideloadly или выбрать его через кнопку IPA.
+6. Выбрать подключенный iPhone в списке устройств.
+7. Ввести Apple ID. Для local-SOCKS IPA подходит обычный бесплатный Apple ID.
+   Лучше использовать отдельный Apple ID для sideloading, а не основной.
+8. Нажать Start и дождаться завершения установки.
+9. На iPhone открыть Settings -> General -> VPN & Device Management и доверить
+   developer profile, связанный с использованным Apple ID.
+10. На iOS 16 и новее включить Developer Mode: Settings -> Privacy & Security
+    -> Developer Mode, затем перезагрузить устройство, если iOS попросит.
+11. Запустить olcRTC на iPhone, выбрать профиль и нажать Start.
+12. В приложениях, которые должны идти через olcRTC, вручную указать SOCKS5
+    proxy `127.0.0.1:<port>`.
+
+Важно:
+
+- Бесплатный Apple ID обычно требует периодической переустановки/обновления
+  sideloaded app.
+- Неподписанный local-SOCKS IPA не содержит Packet Tunnel extension и не
+  включает системный VPN для всего iOS-трафика.
+- Если нужен системный VPN/Packet Tunnel, нужен подписанный IPA с правильными
+  Apple Developer entitlements.
+
+## Подписанный iOS-клиент
+
+Для полной VPN/Packet Tunnel версии нужен Apple Developer Team и provisioning
+profiles с Network Extension `packet-tunnel-provider` entitlement для обоих
+iOS targets:
+
+- `OlcRTCClient iOS`
+- `OlcRTCPacketTunnel`
+
+IPA для разработки:
+
+```bash
+DEVELOPMENT_TEAM=ABCDE12345 \
+EXPORT_METHOD=development \
+./apple/Scripts/build-ios-ipa.sh
+```
+
+Ad-hoc IPA:
+
+```bash
+DEVELOPMENT_TEAM=ABCDE12345 \
+EXPORT_METHOD=ad-hoc \
+./apple/Scripts/build-ios-ipa.sh
+```
+
+Поддерживаемые значения `EXPORT_METHOD`:
+
+- `development`
+- `ad-hoc`
+- `app-store`
+- `enterprise`
+
+Скрипт пишет архив и экспортированный IPA сюда:
+
+```text
+apple/.build/ios-archive/
+apple/.build/ios-ipa/
+```
+
+Для тестирования с реального iPhone через Xcode:
 
 ```bash
 open ./apple/OlcRTCClient.xcodeproj
 ```
 
-In Xcode:
+В Xcode нужно настроить signing для обоих targets:
 
-1. Select target `OlcRTCClient iOS`.
-2. Set your Apple Developer Team.
-3. Enable automatic signing or choose a provisioning profile for the app bundle.
-4. Select target `OlcRTCPacketTunnel`.
-5. Set the same Team and choose a provisioning profile for the extension bundle.
-6. Ensure both profiles include the Network Extension capability with
-   `packet-tunnel-provider`.
+- `OlcRTCClient iOS`
+- `OlcRTCPacketTunnel`
 
-The two bundle identifiers are:
+Используемые bundle IDs:
 
 ```text
 community.openlibre.olcrtc.ios
 community.openlibre.olcrtc.ios.PacketTunnel
 ```
 
-Both must be explicit App IDs in Apple Developer Certificates, Identifiers &
-Profiles. Wildcard App IDs will not work for Network Extension.
+Если bundle IDs меняются, extension bundle ID должен начинаться с bundle ID
+основного приложения.
 
-## Apple Project Notes
+## Проект Xcode
 
-The canonical Apple project description is `apple/project.yml`. Regenerate the
-Xcode project after changing targets, dependencies, signing settings, or bundle
-identifiers:
+После изменений targets, dependencies, entitlements или bundle IDs:
 
 ```bash
 cd apple
 xcodegen generate
 ```
 
-The checked-in Xcode project is kept for convenience, but `project.yml` should
-remain the source of truth for structural changes.
+`project.yml` считается единственным источником правды. Xcode-проект
+генерируется из него.
 
-## Documentation
+## Профили и подписки
 
-- [Fast start](docs/fast.md)
-- [Manual](docs/manual.md)
-- [Settings matrix](docs/settings.md)
-- [Client URI format](docs/uri.md)
-- [Client subscription format](docs/sub.md)
-- [Apple client notes](apple/README.md)
+Через import можно добавить:
 
-## Contacts
+- одиночный `olcrtc://` profile URI;
+- HTTP/HTTPS subscription URL;
+- вставленный текст подписки в формате `sub.md`.
 
-- Telegram: [@openlibrecommunity](https://t.me/openlibrecommunity)
-- Community Android client: [alananisimov/olcbox](https://github.com/alananisimov/olcbox)
+При refresh подписки приложение обновляет найденные nodes, добавляет новые и
+удаляет отсутствующие в обновленном источнике. Локальные runtime-настройки вроде
+SOCKS-порта, SOCKS credentials, DNS, debug logging и timeout сохраняются, если
+node можно сопоставить между refresh.
+
+## Ограничения
+
+- iOS Packet Tunnel сейчас сфокусирован на TCP и DNS-over-tunnel поведении.
+  Произвольный UDP forwarding еще не является полноценным production path.
+- iOS local SOCKS mode использует background audio mode, чтобы процесс
+  продолжал работать после сворачивания приложения. Это удобно для sideloaded
+  local testing; для системного iOS-трафика чище использовать Packet Tunnel.
+- Для реального iPhone с Packet Tunnel нужен платный Apple Developer Program и
+  provisioning profiles с Network Extension capability для обоих iOS targets.

@@ -57,7 +57,7 @@ private struct ProfileSidebar: View {
             if !ungrouped.isEmpty {
                 Section("Profiles") {
                     ForEach(ungrouped) { profile in
-                        ProfileRow(profile: profile)
+                        SelectableProfileRow(profile: profile)
                             .tag(Optional(profile.id))
                             .contextMenu {
                                 Button("Delete", role: .destructive) {
@@ -74,8 +74,18 @@ private struct ProfileSidebar: View {
 
             ForEach(groups) { group in
                 Section {
+                    SubscriptionHeader(
+                        group: group,
+                        isRefreshing: viewModel.refreshingSubscriptionIDs.contains(group.id),
+                        onRefresh: { viewModel.refreshSubscription(group.id) },
+                        onDelete: { viewModel.deleteSubscription(group.id) }
+                    )
+                    #if os(iOS)
+                    .listRowSeparator(.hidden, edges: .top)
+                    #endif
+
                     ForEach(group.profiles) { profile in
-                        ProfileRow(profile: profile)
+                        SelectableProfileRow(profile: profile)
                             .tag(Optional(profile.id))
                             .contextMenu {
                                 Button("Delete", role: .destructive) {
@@ -83,13 +93,6 @@ private struct ProfileSidebar: View {
                                 }
                             }
                     }
-                } header: {
-                    SubscriptionHeader(
-                        group: group,
-                        isRefreshing: viewModel.refreshingSubscriptionIDs.contains(group.id),
-                        onRefresh: { viewModel.refreshSubscription(group.id) },
-                        onDelete: { viewModel.deleteSubscription(group.id) }
-                    )
                 }
             }
         }
@@ -263,27 +266,64 @@ private struct SubscriptionHeader: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             }
+            .layoutPriority(1)
 
             Spacer()
 
-            Button(action: onRefresh) {
-                Image(systemName: isRefreshing ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
-                    .imageScale(.small)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
+            SubscriptionActionButton(
+                systemImage: isRefreshing ? "arrow.triangle.2.circlepath" : "arrow.clockwise",
+                accessibilityLabel: "Refresh subscription",
+                action: onRefresh
+            )
             .disabled(isRefreshing || group.metadata.sourceURL == nil)
+            .foregroundStyle(.secondary)
             .help(group.metadata.sourceURL == nil ? "Subscription has no source URL" : "Refresh subscription")
 
-            Button(action: onDelete) {
-                Image(systemName: "trash")
-                    .imageScale(.small)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
+            SubscriptionActionButton(
+                systemImage: "trash",
+                accessibilityLabel: "Delete subscription",
+                action: onDelete
+            )
+            .foregroundStyle(.red)
             .help("Delete subscription")
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 4)
+    }
+}
+
+private struct SubscriptionActionButton: View {
+    let systemImage: String
+    let accessibilityLabel: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                #if os(iOS)
+                .font(.system(size: 18, weight: .semibold))
+                .frame(width: 40, height: 40)
+                #else
+                .font(.system(size: 13, weight: .semibold))
+                .frame(width: 26, height: 26)
+                #endif
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+private struct SelectableProfileRow: View {
+    let profile: ConnectionProfile
+
+    var body: some View {
+        #if os(iOS)
+        NavigationLink(value: profile.id) {
+            ProfileRow(profile: profile)
+        }
+        #else
+        ProfileRow(profile: profile)
+        #endif
     }
 }
 

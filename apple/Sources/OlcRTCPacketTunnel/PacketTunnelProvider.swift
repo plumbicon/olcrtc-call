@@ -32,8 +32,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
                 try await startTun2Socks(configuration: configuration)
                 completionHandler(nil)
             } catch {
-                await stopRuntime()
                 completionHandler(error)
+                await stopRuntime()
             }
         }
     }

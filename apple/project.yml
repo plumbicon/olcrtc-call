@@ -21,6 +21,18 @@ targets:
     deploymentTarget: "16.0"
     sources:
       - path: Sources/OlcRTCClientiOS
+    info:
+      path: Sources/OlcRTCClientiOS/Info.plist
+      properties:
+        CFBundleDisplayName: olcRTC
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UIApplicationSupportsIndirectInputEvents: true
+        UILaunchScreen: {}
+        UIBackgroundModes:
+          - audio
     dependencies:
       - package: OlcRTCApple
         product: OlcRTCClientKit
@@ -28,12 +40,7 @@ targets:
         embed: true
     settings:
       base:
-        GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: community.openlibre.olcrtc.ios
-        INFOPLIST_KEY_CFBundleDisplayName: olcRTC
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
         CODE_SIGN_ENTITLEMENTS: Sources/OlcRTCClientiOS/OlcRTCClientiOS.entitlements
   OlcRTCPacketTunnel:
     type: app-extension
@@ -85,6 +92,6 @@ schemes:
     run:
       config: Debug
       environmentVariables:
-        OLCRTC_REPO_ROOT: ${PROJECT_DIR}/..
+        OLCRTC_REPO_ROOT: ${PROJECT_DIR}/../olcrtc
     archive:
       config: Release

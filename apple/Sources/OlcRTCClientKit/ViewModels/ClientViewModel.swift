@@ -14,7 +14,11 @@ public final class ClientViewModel: ObservableObject {
     @Published public var draft: ConnectionProfile
     @Published public private(set) var status: ClientStatus = .stopped
     @Published public private(set) var logs: [String] = []
+    #if os(iOS)
+    @Published public var useSystemProxy = false
+    #else
     @Published public var useSystemProxy = true
+    #endif
     @Published public var selectedNetworkService = "Wi-Fi"
     @Published public private(set) var networkServices: [String] = ["Wi-Fi"]
     @Published public private(set) var isImporting = false
@@ -28,6 +32,7 @@ public final class ClientViewModel: ObservableObject {
     private let systemProxyManager: SystemProxyManager
     #if os(iOS)
     private let packetTunnelManager = PacketTunnelManager()
+    private let backgroundRuntimeKeeper = BackgroundRuntimeKeeper()
     #endif
     private var eventTask: Task<Void, Never>?
     private var startTask: Task<Void, Never>?
@@ -67,6 +72,11 @@ public final class ClientViewModel: ObservableObject {
         startTask?.cancel()
         importTask?.cancel()
         refreshTasks.values.forEach { $0.cancel() }
+        #if os(iOS)
+        Task { @MainActor [backgroundRuntimeKeeper] in
+            backgroundRuntimeKeeper.stop()
+        }
+        #endif
     }
 
     public var selectedProfileName: String {
@@ -286,11 +296,17 @@ public final class ClientViewModel: ObservableObject {
                 }
                 status = .ready
                 appendLog("SOCKS proxy is ready at 127.0.0.1:\(activePort).")
+                #if os(iOS)
+                startLocalProxyBackgroundRuntime()
+                #endif
                 await enableSystemProxyIfNeeded(port: activePort)
             } catch {
                 runningMode = nil
                 status = .failed(error.localizedDescription)
                 appendLog("Start failed: \(error.localizedDescription)")
+                #if os(iOS)
+                backgroundRuntimeKeeper.stop()
+                #endif
                 await engine.stop()
             }
         }
@@ -310,6 +326,9 @@ public final class ClientViewModel: ObservableObject {
                 appendLog("iOS VPN tunnel stopped.")
             #endif
             case .localProxy, nil:
+                #if os(iOS)
+                backgroundRuntimeKeeper.stop()
+                #endif
                 await disableSystemProxyIfNeeded()
                 await engine.stop()
             }
@@ -546,6 +565,15 @@ public final class ClientViewModel: ObservableObject {
     }
 
     #if os(iOS)
+    private func startLocalProxyBackgroundRuntime() {
+        do {
+            try backgroundRuntimeKeeper.start()
+            appendLog("iOS background runtime is active for local SOCKS.")
+        } catch {
+            appendLog("iOS background runtime failed: \(error.localizedDescription)")
+        }
+    }
+
     private func startPacketTunnel(profile: ConnectionProfile) {
         status = .starting
         runningMode = .packetTunnel

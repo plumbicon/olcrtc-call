@@ -51,6 +51,7 @@
 		6AE52694FC78A512E41EB813 /* OlcRTCClientMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OlcRTCClientMacApp.swift; sourceTree = "<group>"; };
 		880E42BEBB6776AF69A73E98 /* OlcRTCClient macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OlcRTCClient macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B28F34C3D633B298A7C4C1C /* OlcRTCClientiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OlcRTCClientiOS.entitlements; sourceTree = "<group>"; };
+		C2D534576771DFF8A6A00696 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E7B797AB823BAD61B5AD7E22 /* apple */ = {isa = PBXFileReference; lastKnownFileType = folder; name = apple; path = .; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -126,6 +127,7 @@
 		CEF36F70EBFF4905AFF63F1A /* OlcRTCClientiOS */ = {
 			isa = PBXGroup;
 			children = (
+				C2D534576771DFF8A6A00696 /* Info.plist */,
 				8B28F34C3D633B298A7C4C1C /* OlcRTCClientiOS.entitlements */,
 				45AA020CAE418FD535F4B986 /* OlcRTCClientiOSApp.swift */,
 			);
@@ -313,11 +315,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/OlcRTCClientiOS/OlcRTCClientiOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = olcRTC;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_FILE = Sources/OlcRTCClientiOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -421,11 +419,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/OlcRTCClientiOS/OlcRTCClientiOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = olcRTC;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_FILE = Sources/OlcRTCClientiOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -2,7 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-OUT_DIR="$ROOT_DIR/apple/Frameworks"
+APPLE_DIR="$ROOT_DIR/apple"
+OLCRTC_DIR="$ROOT_DIR/olcrtc"
+OUT_DIR="$APPLE_DIR/Frameworks"
 OUT="$OUT_DIR/Mobile.xcframework"
 
 if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app/Contents/Developer ]]; then
@@ -32,7 +34,7 @@ fi
 mkdir -p "$OUT_DIR"
 rm -rf "$OUT"
 
-cd "$ROOT_DIR"
+cd "$OLCRTC_DIR"
 
 gomobile bind \
   -target=ios,iossimulator,macos \

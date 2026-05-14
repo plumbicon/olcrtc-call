@@ -304,7 +304,7 @@ public final class ProcessOlcRTCEngine: OlcRTCEngine {
 
         let candidates = [
             Bundle.main.resourceURL?.appendingPathComponent("olcrtc-macos"),
-            supportRoot.appendingPathComponent("apple/.build/olcrtc-macos"),
+            supportRoot.appendingPathComponent("../apple/.build/olcrtc-macos"),
             supportRoot.appendingPathComponent("build/olcrtc-darwin-arm64"),
             supportRoot.appendingPathComponent("build/olcrtc-darwin-amd64"),
             supportRoot.appendingPathComponent("build/olcrtc"),
@@ -342,6 +342,10 @@ public final class ProcessOlcRTCEngine: OlcRTCEngine {
             let names = current.appendingPathComponent("data/names")
             if FileManager.default.fileExists(atPath: names.path) {
                 return current
+            }
+            let nestedNames = current.appendingPathComponent("olcrtc/data/names")
+            if FileManager.default.fileExists(atPath: nestedNames.path) {
+                return current.appendingPathComponent("olcrtc")
             }
             current.deleteLastPathComponent()
         }

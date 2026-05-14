@@ -5,12 +5,15 @@ import NetworkExtension
 
 public enum PacketTunnelManagerError: LocalizedError {
     case providerBundleIdentifierMissing
+    case providerDisconnected
     case startTimedOut
 
     public var errorDescription: String? {
         switch self {
         case .providerBundleIdentifierMissing:
             "Packet tunnel provider bundle identifier is missing."
+        case .providerDisconnected:
+            "The iOS VPN tunnel stopped before it reported a connection."
         case .startTimedOut:
             "Timed out while waiting for the iOS VPN tunnel to connect."
         }
@@ -31,12 +34,23 @@ public final class PacketTunnelManager {
         self.localizedDescription = localizedDescription
     }
 
-    public func start(profile: ConnectionProfile) async throws {
+    public func start(
+        profile: ConnectionProfile,
+        eventHandler: ((String) async -> Void)? = nil
+    ) async throws {
         let configuration = PacketTunnelConfiguration(profile: profile.normalizedForCurrentDefaults())
+        await eventHandler?("Preparing iOS VPN configuration.")
         let manager = try await loadOrCreateManager()
+        await eventHandler?("Saving iOS VPN configuration.")
         try await configure(manager: manager, configuration: configuration)
+        await eventHandler?("Requesting iOS VPN tunnel start.")
         try manager.connection.startVPNTunnel(options: configuration.providerConfiguration)
-        try await waitUntilConnected(manager.connection, timeoutMillis: configuration.startTimeoutMillis)
+        await eventHandler?("Waiting up to \(configuration.startTimeoutMillis / 1_000)s for iOS VPN tunnel.")
+        try await waitUntilConnected(
+            manager.connection,
+            timeoutMillis: configuration.startTimeoutMillis,
+            eventHandler: eventHandler
+        )
     }
 
     public func stop() async {
@@ -86,21 +100,38 @@ public final class PacketTunnelManager {
 
     private func waitUntilConnected(
         _ connection: NEVPNConnection,
-        timeoutMillis: Int
+        timeoutMillis: Int,
+        eventHandler: ((String) async -> Void)?
     ) async throws {
         let timeout = UInt64(max(timeoutMillis, 10_000)) * 1_000_000
-        let deadline = ContinuousClock.now.advanced(by: .nanoseconds(timeout))
+        let startedAt = ContinuousClock.now
+        let deadline = startedAt.advanced(by: .nanoseconds(timeout))
+        let disconnectedGraceDeadline = startedAt.advanced(by: .seconds(5))
+        var lastStatus: NEVPNStatus?
+        var sawConnectionAttempt = false
 
         while ContinuousClock.now < deadline {
-            switch connection.status {
+            let status = connection.status
+            if status != lastStatus {
+                await eventHandler?("iOS VPN status: \(Self.statusDescription(status)).")
+                lastStatus = status
+            }
+
+            switch status {
             case .connected:
                 return
             case .invalid:
                 throw PacketTunnelManagerError.providerBundleIdentifierMissing
-            case .disconnected, .disconnecting:
-                break
+            case .disconnected:
+                if sawConnectionAttempt || ContinuousClock.now >= disconnectedGraceDeadline {
+                    throw PacketTunnelManagerError.providerDisconnected
+                }
+            case .disconnecting:
+                if sawConnectionAttempt {
+                    throw PacketTunnelManagerError.providerDisconnected
+                }
             case .connecting, .reasserting:
-                break
+                sawConnectionAttempt = true
             @unknown default:
                 break
             }
@@ -108,6 +139,25 @@ public final class PacketTunnelManager {
         }
 
         throw PacketTunnelManagerError.startTimedOut
+    }
+
+    private static func statusDescription(_ status: NEVPNStatus) -> String {
+        switch status {
+        case .invalid:
+            "invalid"
+        case .disconnected:
+            "disconnected"
+        case .connecting:
+            "connecting"
+        case .connected:
+            "connected"
+        case .reasserting:
+            "reasserting"
+        case .disconnecting:
+            "disconnecting"
+        @unknown default:
+            "unknown"
+        }
     }
 
     private static func loadAllManagers() async throws -> [NETunnelProviderManager] {
