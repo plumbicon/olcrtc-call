@@ -48,7 +48,7 @@ apple/.build/ios-unsigned-local/OlcRTCClient-unsigned-local.ipa
 iOS background runtime is active for local SOCKS.
 ```
 
-Установка через Sideloadly:
+#### Установка через Sideloadly:
 
 1. Установить Sideloadly с официального сайта: `https://sideloadly.io/`.
 2. Подключить iPhone к Mac по USB и нажать Trust/Доверять на телефоне, если iOS
