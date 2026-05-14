@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct ContentView: View {
     @StateObject private var viewModel: ClientViewModel
+    @State private var isShowingImporter = false
 
     @MainActor
     public init() {
@@ -15,19 +16,26 @@ public struct ContentView: View {
 
     public var body: some View {
         NavigationSplitView {
-            ProfileSidebar(viewModel: viewModel)
+            ProfileSidebar(viewModel: viewModel, isShowingImporter: $isShowingImporter)
         } detail: {
             VStack(spacing: 0) {
                 ClientHeaderView(viewModel: viewModel)
                 Divider()
-                ProfileEditorView(
-                    profile: $viewModel.draft,
-                    useSystemProxy: $viewModel.useSystemProxy,
-                    selectedNetworkService: $viewModel.selectedNetworkService,
-                    networkServices: viewModel.networkServices,
-                    validationMessage: viewModel.validationMessage,
-                    onCommit: viewModel.saveDraft
-                )
+                if viewModel.selectedProfileID == nil {
+                    EmptyProfileDetailView(
+                        onAddProfile: viewModel.addProfile,
+                        onImportProfile: { isShowingImporter = true }
+                    )
+                } else {
+                    ProfileEditorView(
+                        profile: $viewModel.draft,
+                        useSystemProxy: $viewModel.useSystemProxy,
+                        selectedNetworkService: $viewModel.selectedNetworkService,
+                        networkServices: viewModel.networkServices,
+                        validationMessage: viewModel.validationMessage,
+                        onCommit: viewModel.saveDraft
+                    )
+                }
                 Divider()
                 LogView(logs: viewModel.logs) {
                     viewModel.clearLogs()
@@ -42,12 +50,51 @@ public struct ContentView: View {
         .dynamicTypeSize(.small ... .large)
         .controlSize(.small)
         #endif
+        .sheet(isPresented: $isShowingImporter) {
+            AddProfileImportSheet(isImporting: viewModel.isImporting) { value in
+                viewModel.importValue(value)
+                isShowingImporter = false
+            }
+        }
+    }
+}
+
+private struct EmptyProfileDetailView: View {
+    let onAddProfile: () -> Void
+    let onImportProfile: () -> Void
+
+    var body: some View {
+        VStack(spacing: 14) {
+            Spacer(minLength: 24)
+
+            Image(systemName: "person.crop.circle.badge.plus")
+                .font(.system(size: 42))
+                .foregroundStyle(.secondary)
+
+            Text("No profiles")
+                .font(.title3.weight(.semibold))
+
+            HStack(spacing: 10) {
+                Button(action: onAddProfile) {
+                    Label("Add Profile", systemImage: "plus")
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button(action: onImportProfile) {
+                    Label("Import Profile", systemImage: "square.and.arrow.down")
+                }
+            }
+
+            Spacer(minLength: 24)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
     }
 }
 
 private struct ProfileSidebar: View {
     @ObservedObject var viewModel: ClientViewModel
-    @State private var isShowingImporter = false
+    @Binding var isShowingImporter: Bool
 
     var body: some View {
         List(selection: selection) {
@@ -113,12 +160,6 @@ private struct ProfileSidebar: View {
                 } label: {
                     Label("Import Profile", systemImage: "square.and.arrow.down")
                 }
-            }
-        }
-        .sheet(isPresented: $isShowingImporter) {
-            AddProfileImportSheet(isImporting: viewModel.isImporting) { value in
-                viewModel.importValue(value)
-                isShowingImporter = false
             }
         }
         #if os(macOS)

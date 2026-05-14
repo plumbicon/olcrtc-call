@@ -21,7 +21,7 @@ public final class ProfileStore {
 
         do {
             let profiles = try JSONDecoder().decode([ConnectionProfile].self, from: data)
-            return profiles.isEmpty ? [.empty] : profiles.map { profile in
+            return profiles.map { profile in
                 var profile = profile
                 secretStore.loadSecrets(into: &profile)
                 return profile

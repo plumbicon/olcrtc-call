@@ -57,11 +57,11 @@ public final class ClientViewModel: ObservableObject {
 
         let loadedProfiles = store.loadProfiles().map { $0.normalizedForCurrentDefaults() }
         let selected = store.loadSelectedProfileID()
-        let initialProfile = loadedProfiles.first(where: { $0.id == selected }) ?? loadedProfiles[0]
+        let initialProfile = loadedProfiles.first(where: { $0.id == selected }) ?? loadedProfiles.first
 
         profiles = loadedProfiles
-        selectedProfileID = initialProfile.id
-        draft = initialProfile
+        selectedProfileID = initialProfile?.id
+        draft = initialProfile ?? .empty
 
         observeEngineEvents()
         loadNetworkServices()
@@ -80,11 +80,15 @@ public final class ClientViewModel: ObservableObject {
     }
 
     public var selectedProfileName: String {
-        draft.name.isEmpty ? "Untitled profile" : draft.name
+        guard selectedProfileID != nil else {
+            return "No profile"
+        }
+
+        return draft.name.isEmpty ? "Untitled profile" : draft.name
     }
 
     public var canStart: Bool {
-        !status.isRunning && validationMessage == nil
+        selectedProfileID != nil && !status.isRunning && validationMessage == nil
     }
 
     public var validationMessage: String? {
@@ -114,43 +118,21 @@ public final class ClientViewModel: ObservableObject {
     }
 
     public func deleteProfiles(at offsets: IndexSet) {
-        guard profiles.count > 1 else {
-            return
-        }
-
         let removedIDs = offsets.compactMap { profiles.indices.contains($0) ? profiles[$0].id : nil }
         for offset in offsets.sorted(by: >) {
-            profiles.remove(at: offset)
+            if profiles.indices.contains(offset) {
+                profiles.remove(at: offset)
+            }
         }
         store.deleteSecrets(profileIDs: removedIDs)
-        if let selectedProfileID, profiles.contains(where: { $0.id == selectedProfileID }) {
-            persistProfiles()
-            return
-        }
-
-        let profile = profiles[0]
-        self.selectedProfileID = profile.id
-        draft = profile
-        persistProfiles()
+        selectProfileAfterDeletion()
     }
 
     public func deleteProfiles(ids: [UUID]) {
-        guard profiles.count > ids.count else {
-            return
-        }
-
+        let removedIDs = profiles.compactMap { ids.contains($0.id) ? $0.id : nil }
         profiles.removeAll { ids.contains($0.id) }
-        store.deleteSecrets(profileIDs: ids)
-
-        if let selectedProfileID, profiles.contains(where: { $0.id == selectedProfileID }) {
-            persistProfiles()
-            return
-        }
-
-        let profile = profiles[0]
-        selectedProfileID = profile.id
-        draft = profile
-        persistProfiles()
+        store.deleteSecrets(profileIDs: removedIDs)
+        selectProfileAfterDeletion()
     }
 
     public func deleteSubscription(_ id: UUID) {
@@ -344,6 +326,22 @@ public final class ClientViewModel: ObservableObject {
     private func persistProfiles() {
         store.saveProfiles(profiles)
         store.saveSelectedProfileID(selectedProfileID)
+    }
+
+    private func selectProfileAfterDeletion() {
+        if let selectedProfileID, profiles.contains(where: { $0.id == selectedProfileID }) {
+            persistProfiles()
+            return
+        }
+
+        if let profile = profiles.first {
+            selectedProfileID = profile.id
+            draft = profile
+        } else {
+            selectedProfileID = nil
+            draft = .empty
+        }
+        persistProfiles()
     }
 
     private func importSubscription(_ value: String, sourceURL: URL?) throws {
