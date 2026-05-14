@@ -1,30 +1,10 @@
 # olcRTC Call
 
-macOS/iOS-клиент для olcRTC, собранный вокруг Go-runtime.
+macOS/iOS-клиент для olcRTC.
 
-Go-runtime остается источником сетевой логики. Apple-часть отвечает за нативный
-интерфейс, хранение профилей, Keychain, системный прокси/VPN-интеграцию и
-упаковку приложений.
-
-## Структура
-
-- `olcrtc/`: Go-runtime, CLI, тесты, data-файлы и gomobile-пакет.
-- `apple/Package.swift`: SwiftPM-пакет с общим кодом приложения.
-- `apple/project.yml`: основной файл XcodeGen для app/extension targets.
-- `apple/OlcRTCClient.xcodeproj`: сгенерированный Xcode-проект.
-- `apple/Sources/OlcRTCClientKit`: общие SwiftUI views, models, stores,
-  parsers и runtime managers.
-- `apple/Sources/OlcRTCClientMac`: точка входа macOS-приложения.
-- `apple/Sources/OlcRTCClientiOS`: точка входа iOS-приложения и entitlements.
-- `apple/Sources/OlcRTCPacketTunnel`: iOS Packet Tunnel extension.
-- `apple/Scripts`: скрипты сборки.
-
-Локальные результаты сборки не коммитятся:
-
-- `apple/.build/`
-- `apple/.derived-data/`
-- `apple/.swiftpm/`
-- `apple/Frameworks/Mobile.xcframework`
+Apple-часть отвечает за нативный интерфейс, хранение профилей, Keychain,
+системный прокси/VPN-интеграцию и упаковку приложений. Go-runtime лежит в
+`olcrtc/`.
 
 ## Требования
 
@@ -43,68 +23,12 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 sudo xcodebuild -license accept
 ```
 
-## Go-runtime
+## Сборка
 
-```bash
-cd olcrtc
-go test ./...
-```
+### Сборка неподписанного iOS-клиента
 
-## Сборка macOS-клиента
-
-Из корня репозитория:
-
-```bash
-./apple/Scripts/build-macos-app.sh
-open ./apple/.build/olcRTC.app
-```
-
-Скрипт собирает:
-
-- `apple/.build/olcrtc-macos`: Go CLI helper.
-- `apple/.build/olcRTC.app`: запускаемый macOS app bundle.
-
-macOS-приложение хранит секреты профиля в Keychain. JSON-профиль в
-`UserDefaults` не содержит ключ шифрования или SOCKS-пароль.
-
-При успешном старте в Events должно появиться:
-
-```text
-SOCKS proxy is ready at 127.0.0.1:<port>.
-System SOCKS proxy enabled for <service> on 127.0.0.1:<port>.
-```
-
-Если приложение было принудительно закрыто, пока системный SOCKS-прокси macOS
-включен:
-
-```bash
-networksetup -setsocksfirewallproxystate "Wi-Fi" off
-```
-
-## Общая iOS-сборка
-
-Собрать gomobile framework:
-
-```bash
-./apple/Scripts/build-xcframework.sh
-```
-
-Запустить iOS-приложение в Simulator:
-
-```bash
-./apple/Scripts/run-ios-simulator.sh
-```
-
-Только собрать iOS-приложение для Simulator, без запуска:
-
-```bash
-./apple/Scripts/build-ios-app.sh
-```
-
-## Неподписанный iOS-клиент
-
-Для установки local-SOCKS версии на реальный iPhone без Network Extension
-entitlement:
+Неподписанная сборка предназначена для local SOCKS режима на реальном iPhone
+без Network Extension entitlement:
 
 ```bash
 ./apple/Scripts/build-ios-unsigned-local-ipa.sh
@@ -116,9 +40,11 @@ entitlement:
 apple/.build/ios-unsigned-local/OlcRTCClient-unsigned-local.ipa
 ```
 
-Этот IPA собирается с `LOCAL_SOCKS_ONLY`: в нем остается local SOCKS режим, но
-удаляется Packet Tunnel extension. Это нужно, чтобы пакет можно было затем
-подписать обычным Apple ID через Sideloadly без Network Extension entitlement.
+Этот IPA собирается с `LOCAL_SOCKS_ONLY`: в нем остается local SOCKS proxy, но
+удаляется Packet Tunnel extension. Поэтому приложение не поднимает системный VPN
+и не маршрутизирует весь iOS-трафик само. Системный трафик нужно направлять в
+локальный прокси через стороннее приложение, например Happ, указав SOCKS5
+`127.0.0.1:<port>`.
 
 При старте local SOCKS на iOS в Events должно появиться:
 
@@ -126,7 +52,7 @@ apple/.build/ios-unsigned-local/OlcRTCClient-unsigned-local.ipa
 iOS background runtime is active for local SOCKS.
 ```
 
-## Установка неподписанного IPA через Sideloadly
+Установка через Sideloadly:
 
 1. Установить Sideloadly с официального сайта: `https://sideloadly.io/`.
 2. Подключить iPhone к Mac по USB и нажать Trust/Доверять на телефоне, если iOS
@@ -150,23 +76,50 @@ iOS background runtime is active for local SOCKS.
 10. На iOS 16 и новее включить Developer Mode: Settings -> Privacy & Security
     -> Developer Mode, затем перезагрузить устройство, если iOS попросит.
 11. Запустить olcRTC на iPhone, выбрать профиль и нажать Start.
-12. В приложениях, которые должны идти через olcRTC, вручную указать SOCKS5
-    proxy `127.0.0.1:<port>`.
+12. В Happ или другом приложении для маршрутизации трафика указать SOCKS5 proxy
+    `127.0.0.1:<port>`.
 
 Важно:
 
 - Бесплатный Apple ID обычно требует периодической переустановки/обновления
   sideloaded app.
-- Неподписанный local-SOCKS IPA не содержит Packet Tunnel extension и не
-  включает системный VPN для всего iOS-трафика.
-- Если нужен системный VPN/Packet Tunnel, нужен подписанный IPA с правильными
-  Apple Developer entitlements.
+- Неподписанный local-SOCKS IPA не содержит Packet Tunnel extension.
+- Если нужен системный VPN/Packet Tunnel без стороннего маршрутизатора, нужна
+  подписанная сборка с правильными Apple Developer entitlements.
 
-## Подписанный iOS-клиент
+### Сборка macOS-клиента
 
-Для полной VPN/Packet Tunnel версии нужен Apple Developer Team и provisioning
-profiles с Network Extension `packet-tunnel-provider` entitlement для обоих
-iOS targets:
+Из корня репозитория:
+
+```bash
+./apple/Scripts/build-macos-app.sh
+open ./apple/.build/olcRTC.app
+```
+
+Скрипт собирает:
+
+- `apple/.build/olcrtc-macos`: Go CLI helper.
+- `apple/.build/olcRTC.app`: запускаемый macOS app bundle.
+
+При успешном старте в Events должно появиться:
+
+```text
+SOCKS proxy is ready at 127.0.0.1:<port>.
+System SOCKS proxy enabled for <service> on 127.0.0.1:<port>.
+```
+
+Если приложение было принудительно закрыто, пока системный SOCKS-прокси macOS
+включен:
+
+```bash
+networksetup -setsocksfirewallproxystate "Wi-Fi" off
+```
+
+### Сборка подписанного iOS-клиента
+
+Подписанная сборка нужна для полной VPN/Packet Tunnel версии. Для нее нужен
+Apple Developer Team и provisioning profiles с Network Extension
+`packet-tunnel-provider` entitlement для обоих iOS targets:
 
 - `OlcRTCClient iOS`
 - `OlcRTCPacketTunnel`
@@ -222,37 +175,8 @@ community.openlibre.olcrtc.ios.PacketTunnel
 Если bundle IDs меняются, extension bundle ID должен начинаться с bundle ID
 основного приложения.
 
-## Проект Xcode
+## Дополнительно
 
-После изменений targets, dependencies, entitlements или bundle IDs:
-
-```bash
-cd apple
-xcodegen generate
-```
-
-`project.yml` считается единственным источником правды. Xcode-проект
-генерируется из него.
-
-## Профили и подписки
-
-Через import можно добавить:
-
-- одиночный `olcrtc://` profile URI;
-- HTTP/HTTPS subscription URL;
-- вставленный текст подписки в формате `sub.md`.
-
-При refresh подписки приложение обновляет найденные nodes, добавляет новые и
-удаляет отсутствующие в обновленном источнике. Локальные runtime-настройки вроде
-SOCKS-порта, SOCKS credentials, DNS, debug logging и timeout сохраняются, если
-node можно сопоставить между refresh.
-
-## Ограничения
-
-- iOS Packet Tunnel сейчас сфокусирован на TCP и DNS-over-tunnel поведении.
-  Произвольный UDP forwarding еще не является полноценным production path.
-- iOS local SOCKS mode использует background audio mode, чтобы процесс
-  продолжал работать после сворачивания приложения. Это удобно для sideloaded
-  local testing; для системного iOS-трафика чище использовать Packet Tunnel.
-- Для реального iPhone с Packet Tunnel нужен платный Apple Developer Program и
-  provisioning profiles с Network Extension capability для обоих iOS targets.
+- Детали структуры проекта, XcodeGen и ограничения: [docs/dev.md](docs/dev.md).
+- Формат профилей и подписок описан в `olcrtc/docs/sub.md` и
+  `olcrtc/docs/uri.md`.
