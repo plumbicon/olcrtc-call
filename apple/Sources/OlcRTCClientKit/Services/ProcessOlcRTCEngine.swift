@@ -148,12 +148,16 @@ public final class ProcessOlcRTCEngine: OlcRTCEngine {
             "-batch", "\(options.seiBatchSize)",
             "-frag", "\(options.seiFragmentSize)",
             "-ack-ms", "\(options.seiAckTimeoutMillis)",
-            "-video-codec", "qrcode",
-            "-video-w", "1080",
-            "-video-h", "1080",
-            "-video-fps", "60",
-            "-video-bitrate", "5000k",
-            "-video-hw", "none",
+            "-video-codec", options.videoCodec,
+            "-video-w", "\(options.videoWidth)",
+            "-video-h", "\(options.videoHeight)",
+            "-video-fps", "\(options.videoFPS)",
+            "-video-bitrate", options.videoBitrate,
+            "-video-hw", options.videoHardwareAcceleration,
+            "-video-qr-recovery", options.videoQRRecovery,
+            "-video-qr-size", "\(options.videoQRSize)",
+            "-video-tile-module", "\(options.videoTileModule)",
+            "-video-tile-rs", "\(options.videoTileRS)",
         ]
         if options.debugLogging {
             args.append("-debug")

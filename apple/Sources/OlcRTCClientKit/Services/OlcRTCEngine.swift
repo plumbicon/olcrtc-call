@@ -17,6 +17,16 @@ public struct OlcRTCStartOptions: Equatable {
     public var seiBatchSize: Int
     public var seiFragmentSize: Int
     public var seiAckTimeoutMillis: Int
+    public var videoCodec: String
+    public var videoWidth: Int
+    public var videoHeight: Int
+    public var videoFPS: Int
+    public var videoBitrate: String
+    public var videoHardwareAcceleration: String
+    public var videoQRRecovery: String
+    public var videoQRSize: Int
+    public var videoTileModule: Int
+    public var videoTileRS: Int
     public var startTimeoutMillis: Int
 
     public init(profile: ConnectionProfile) {
@@ -36,6 +46,16 @@ public struct OlcRTCStartOptions: Equatable {
         seiBatchSize = profile.seiBatchSize
         seiFragmentSize = profile.seiFragmentSize
         seiAckTimeoutMillis = profile.seiAckTimeoutMillis
+        videoCodec = profile.videoCodec
+        videoWidth = profile.videoWidth
+        videoHeight = profile.videoHeight
+        videoFPS = profile.videoFPS
+        videoBitrate = profile.videoBitrate
+        videoHardwareAcceleration = profile.videoHardwareAcceleration
+        videoQRRecovery = profile.videoQRRecovery
+        videoQRSize = profile.videoQRSize
+        videoTileModule = profile.videoTileModule
+        videoTileRS = profile.videoTileRS
         startTimeoutMillis = profile.startTimeoutMillis
     }
 }

@@ -96,6 +96,10 @@ public final class ClientViewModel: ObservableObject {
         validate(profile: draft)
     }
 
+    public func validationMessage(for profile: ConnectionProfile) -> String? {
+        validate(profile: profile)
+    }
+
     public func selectProfile(_ id: UUID?) {
         saveDraft()
         guard let id, let profile = profiles.first(where: { $0.id == id }) else {
@@ -115,6 +119,23 @@ public final class ClientViewModel: ObservableObject {
         profiles.append(profile)
         selectedProfileID = profile.id
         draft = profile
+        persistProfiles()
+    }
+
+    public func createProfile(_ profile: ConnectionProfile) {
+        saveDraft()
+
+        var newProfile = profile.normalizedForCurrentDefaults()
+        newProfile.id = UUID()
+        newProfile.subscription = nil
+        if newProfile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            newProfile.name = "Профиль \(profiles.count + 1)"
+        }
+
+        replacePlaceholderIfNeeded()
+        profiles.append(newProfile)
+        selectedProfileID = newProfile.id
+        draft = newProfile
         persistProfiles()
     }
 
@@ -681,6 +702,29 @@ public final class ClientViewModel: ObservableObject {
         }
         if !(1...65_535).contains(profile.socksPort) {
             return "SOCKS-порт должен быть от 1 до 65535."
+        }
+        if profile.transport == .videochannel {
+            if !["qrcode", "tile"].contains(profile.videoCodec) {
+                return "Video codec должен быть qrcode или tile."
+            }
+            if profile.videoWidth <= 0 || profile.videoHeight <= 0 {
+                return "Укажите размер videochannel."
+            }
+            if profile.videoFPS <= 0 {
+                return "Укажите FPS videochannel."
+            }
+            if profile.videoBitrate.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return "Укажите битрейт videochannel."
+            }
+            if !["none", "nvenc"].contains(profile.videoHardwareAcceleration) {
+                return "Аппаратное ускорение должно быть none или nvenc."
+            }
+            if !["low", "medium", "high", "highest"].contains(profile.videoQRRecovery) {
+                return "QR коррекция должна быть low, medium, high или highest."
+            }
+            if profile.videoCodec == "tile" && (profile.videoWidth != 1080 || profile.videoHeight != 1080) {
+                return "Для tile codec нужен размер 1080x1080."
+            }
         }
 
         return nil

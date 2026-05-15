@@ -56,6 +56,16 @@ public struct ConnectionProfile: Codable, Equatable, Identifiable {
     public var seiBatchSize: Int
     public var seiFragmentSize: Int
     public var seiAckTimeoutMillis: Int
+    public var videoCodec: String
+    public var videoWidth: Int
+    public var videoHeight: Int
+    public var videoFPS: Int
+    public var videoBitrate: String
+    public var videoHardwareAcceleration: String
+    public var videoQRRecovery: String
+    public var videoQRSize: Int
+    public var videoTileModule: Int
+    public var videoTileRS: Int
     public var startTimeoutMillis: Int
 
     public init(
@@ -73,11 +83,21 @@ public struct ConnectionProfile: Codable, Equatable, Identifiable {
         dnsServer: String = "77.88.8.8",
         debugLogging: Bool = false,
         vp8FPS: Int = 60,
-        vp8BatchSize: Int = 8,
+        vp8BatchSize: Int = 64,
         seiFPS: Int = 60,
         seiBatchSize: Int = 64,
         seiFragmentSize: Int = 900,
         seiAckTimeoutMillis: Int = 2_000,
+        videoCodec: String = "qrcode",
+        videoWidth: Int = 1080,
+        videoHeight: Int = 1080,
+        videoFPS: Int = 60,
+        videoBitrate: String = "5000k",
+        videoHardwareAcceleration: String = "none",
+        videoQRRecovery: String = "low",
+        videoQRSize: Int = 0,
+        videoTileModule: Int = 4,
+        videoTileRS: Int = 20,
         startTimeoutMillis: Int = Self.defaultStartTimeoutMillis
     ) {
         self.id = id
@@ -99,6 +119,16 @@ public struct ConnectionProfile: Codable, Equatable, Identifiable {
         self.seiBatchSize = seiBatchSize
         self.seiFragmentSize = seiFragmentSize
         self.seiAckTimeoutMillis = seiAckTimeoutMillis
+        self.videoCodec = videoCodec
+        self.videoWidth = videoWidth
+        self.videoHeight = videoHeight
+        self.videoFPS = videoFPS
+        self.videoBitrate = videoBitrate
+        self.videoHardwareAcceleration = videoHardwareAcceleration
+        self.videoQRRecovery = videoQRRecovery
+        self.videoQRSize = videoQRSize
+        self.videoTileModule = videoTileModule
+        self.videoTileRS = videoTileRS
         self.startTimeoutMillis = startTimeoutMillis
     }
 
@@ -122,6 +152,16 @@ public struct ConnectionProfile: Codable, Equatable, Identifiable {
         case seiBatchSize
         case seiFragmentSize
         case seiAckTimeoutMillis
+        case videoCodec
+        case videoWidth
+        case videoHeight
+        case videoFPS
+        case videoBitrate
+        case videoHardwareAcceleration
+        case videoQRRecovery
+        case videoQRSize
+        case videoTileModule
+        case videoTileRS
         case startTimeoutMillis
     }
 
@@ -141,11 +181,24 @@ public struct ConnectionProfile: Codable, Equatable, Identifiable {
         dnsServer = try container.decodeIfPresent(String.self, forKey: .dnsServer) ?? "77.88.8.8"
         debugLogging = try container.decodeIfPresent(Bool.self, forKey: .debugLogging) ?? false
         vp8FPS = try container.decodeIfPresent(Int.self, forKey: .vp8FPS) ?? 60
-        vp8BatchSize = try container.decodeIfPresent(Int.self, forKey: .vp8BatchSize) ?? 8
+        vp8BatchSize = try container.decodeIfPresent(Int.self, forKey: .vp8BatchSize) ?? 64
         seiFPS = try container.decodeIfPresent(Int.self, forKey: .seiFPS) ?? 60
         seiBatchSize = try container.decodeIfPresent(Int.self, forKey: .seiBatchSize) ?? 64
         seiFragmentSize = try container.decodeIfPresent(Int.self, forKey: .seiFragmentSize) ?? 900
         seiAckTimeoutMillis = try container.decodeIfPresent(Int.self, forKey: .seiAckTimeoutMillis) ?? 2_000
+        videoCodec = try container.decodeIfPresent(String.self, forKey: .videoCodec) ?? "qrcode"
+        videoWidth = try container.decodeIfPresent(Int.self, forKey: .videoWidth) ?? 1080
+        videoHeight = try container.decodeIfPresent(Int.self, forKey: .videoHeight) ?? 1080
+        videoFPS = try container.decodeIfPresent(Int.self, forKey: .videoFPS) ?? 60
+        videoBitrate = try container.decodeIfPresent(String.self, forKey: .videoBitrate) ?? "5000k"
+        videoHardwareAcceleration = try container.decodeIfPresent(
+            String.self,
+            forKey: .videoHardwareAcceleration
+        ) ?? "none"
+        videoQRRecovery = try container.decodeIfPresent(String.self, forKey: .videoQRRecovery) ?? "low"
+        videoQRSize = try container.decodeIfPresent(Int.self, forKey: .videoQRSize) ?? 0
+        videoTileModule = try container.decodeIfPresent(Int.self, forKey: .videoTileModule) ?? 4
+        videoTileRS = try container.decodeIfPresent(Int.self, forKey: .videoTileRS) ?? 20
         startTimeoutMillis = try container.decodeIfPresent(Int.self, forKey: .startTimeoutMillis)
             ?? Self.defaultStartTimeoutMillis
     }

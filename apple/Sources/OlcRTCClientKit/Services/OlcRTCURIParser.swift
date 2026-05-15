@@ -123,6 +123,36 @@ public struct OlcRTCURIParser {
         if let value = parameters["ack-ms"].flatMap(Int.init) {
             profile.seiAckTimeoutMillis = value
         }
+        if let value = parameters["video-codec"] {
+            profile.videoCodec = value
+        }
+        if let value = parameters["video-w"].flatMap(Int.init) {
+            profile.videoWidth = value
+        }
+        if let value = parameters["video-h"].flatMap(Int.init) {
+            profile.videoHeight = value
+        }
+        if let value = parameters["video-fps"].flatMap(Int.init) {
+            profile.videoFPS = value
+        }
+        if let value = parameters["video-bitrate"] {
+            profile.videoBitrate = value
+        }
+        if let value = parameters["video-hw"] {
+            profile.videoHardwareAcceleration = value
+        }
+        if let value = parameters["video-qr-recovery"] {
+            profile.videoQRRecovery = value
+        }
+        if let value = parameters["video-qr-size"].flatMap(Int.init) {
+            profile.videoQRSize = value
+        }
+        if let value = parameters["video-tile-module"].flatMap(Int.init) {
+            profile.videoTileModule = value
+        }
+        if let value = parameters["video-tile-rs"].flatMap(Int.init) {
+            profile.videoTileRS = value
+        }
     }
 
     private func parseFragment(_ value: String, into profile: inout ConnectionProfile) throws {

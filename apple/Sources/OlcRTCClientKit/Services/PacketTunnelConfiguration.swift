@@ -32,6 +32,16 @@ public struct PacketTunnelConfiguration: Equatable {
         static let seiBatchSize = "seiBatchSize"
         static let seiFragmentSize = "seiFragmentSize"
         static let seiAckTimeoutMillis = "seiAckTimeoutMillis"
+        static let videoCodec = "videoCodec"
+        static let videoWidth = "videoWidth"
+        static let videoHeight = "videoHeight"
+        static let videoFPS = "videoFPS"
+        static let videoBitrate = "videoBitrate"
+        static let videoHardwareAcceleration = "videoHardwareAcceleration"
+        static let videoQRRecovery = "videoQRRecovery"
+        static let videoQRSize = "videoQRSize"
+        static let videoTileModule = "videoTileModule"
+        static let videoTileRS = "videoTileRS"
         static let startTimeoutMillis = "startTimeoutMillis"
     }
 
@@ -51,6 +61,16 @@ public struct PacketTunnelConfiguration: Equatable {
     public var seiBatchSize: Int
     public var seiFragmentSize: Int
     public var seiAckTimeoutMillis: Int
+    public var videoCodec: String
+    public var videoWidth: Int
+    public var videoHeight: Int
+    public var videoFPS: Int
+    public var videoBitrate: String
+    public var videoHardwareAcceleration: String
+    public var videoQRRecovery: String
+    public var videoQRSize: Int
+    public var videoTileModule: Int
+    public var videoTileRS: Int
     public var startTimeoutMillis: Int
 
     public init(profile: ConnectionProfile) {
@@ -70,6 +90,16 @@ public struct PacketTunnelConfiguration: Equatable {
         seiBatchSize = profile.seiBatchSize
         seiFragmentSize = profile.seiFragmentSize
         seiAckTimeoutMillis = profile.seiAckTimeoutMillis
+        videoCodec = profile.videoCodec
+        videoWidth = profile.videoWidth
+        videoHeight = profile.videoHeight
+        videoFPS = profile.videoFPS
+        videoBitrate = profile.videoBitrate
+        videoHardwareAcceleration = profile.videoHardwareAcceleration
+        videoQRRecovery = profile.videoQRRecovery
+        videoQRSize = profile.videoQRSize
+        videoTileModule = profile.videoTileModule
+        videoTileRS = profile.videoTileRS
         startTimeoutMillis = profile.startTimeoutMillis
     }
 
@@ -90,11 +120,25 @@ public struct PacketTunnelConfiguration: Equatable {
         dnsServer = try Self.stringValue(Key.dnsServer, from: values)
         debugLogging = Self.boolValue(Key.debugLogging, from: values)
         vp8FPS = Self.optionalIntValue(Key.vp8FPS, from: values) ?? 60
-        vp8BatchSize = Self.optionalIntValue(Key.vp8BatchSize, from: values) ?? 8
+        vp8BatchSize = Self.optionalIntValue(Key.vp8BatchSize, from: values) ?? 64
         seiFPS = Self.optionalIntValue(Key.seiFPS, from: values) ?? 60
         seiBatchSize = Self.optionalIntValue(Key.seiBatchSize, from: values) ?? 64
         seiFragmentSize = Self.optionalIntValue(Key.seiFragmentSize, from: values) ?? 900
         seiAckTimeoutMillis = Self.optionalIntValue(Key.seiAckTimeoutMillis, from: values) ?? 2_000
+        videoCodec = Self.optionalStringValue(Key.videoCodec, from: values, defaultValue: "qrcode")
+        videoWidth = Self.optionalIntValue(Key.videoWidth, from: values) ?? 1080
+        videoHeight = Self.optionalIntValue(Key.videoHeight, from: values) ?? 1080
+        videoFPS = Self.optionalIntValue(Key.videoFPS, from: values) ?? 60
+        videoBitrate = Self.optionalStringValue(Key.videoBitrate, from: values, defaultValue: "5000k")
+        videoHardwareAcceleration = Self.optionalStringValue(
+            Key.videoHardwareAcceleration,
+            from: values,
+            defaultValue: "none"
+        )
+        videoQRRecovery = Self.optionalStringValue(Key.videoQRRecovery, from: values, defaultValue: "low")
+        videoQRSize = Self.optionalIntValue(Key.videoQRSize, from: values) ?? 0
+        videoTileModule = Self.optionalIntValue(Key.videoTileModule, from: values) ?? 4
+        videoTileRS = Self.optionalIntValue(Key.videoTileRS, from: values) ?? 20
         startTimeoutMillis = Self.optionalIntValue(Key.startTimeoutMillis, from: values)
             ?? ConnectionProfile.defaultStartTimeoutMillis
     }
@@ -117,6 +161,16 @@ public struct PacketTunnelConfiguration: Equatable {
             Key.seiBatchSize: seiBatchSize as NSNumber,
             Key.seiFragmentSize: seiFragmentSize as NSNumber,
             Key.seiAckTimeoutMillis: seiAckTimeoutMillis as NSNumber,
+            Key.videoCodec: videoCodec as NSString,
+            Key.videoWidth: videoWidth as NSNumber,
+            Key.videoHeight: videoHeight as NSNumber,
+            Key.videoFPS: videoFPS as NSNumber,
+            Key.videoBitrate: videoBitrate as NSString,
+            Key.videoHardwareAcceleration: videoHardwareAcceleration as NSString,
+            Key.videoQRRecovery: videoQRRecovery as NSString,
+            Key.videoQRSize: videoQRSize as NSNumber,
+            Key.videoTileModule: videoTileModule as NSNumber,
+            Key.videoTileRS: videoTileRS as NSNumber,
             Key.startTimeoutMillis: startTimeoutMillis as NSNumber,
         ]
     }
@@ -136,6 +190,16 @@ public struct PacketTunnelConfiguration: Equatable {
             Key.seiBatchSize: seiBatchSize as NSNumber,
             Key.seiFragmentSize: seiFragmentSize as NSNumber,
             Key.seiAckTimeoutMillis: seiAckTimeoutMillis as NSNumber,
+            Key.videoCodec: videoCodec as NSString,
+            Key.videoWidth: videoWidth as NSNumber,
+            Key.videoHeight: videoHeight as NSNumber,
+            Key.videoFPS: videoFPS as NSNumber,
+            Key.videoBitrate: videoBitrate as NSString,
+            Key.videoHardwareAcceleration: videoHardwareAcceleration as NSString,
+            Key.videoQRRecovery: videoQRRecovery as NSString,
+            Key.videoQRSize: videoQRSize as NSNumber,
+            Key.videoTileModule: videoTileModule as NSNumber,
+            Key.videoTileRS: videoTileRS as NSNumber,
             Key.startTimeoutMillis: startTimeoutMillis as NSNumber,
         ]
     }
@@ -159,6 +223,16 @@ public struct PacketTunnelConfiguration: Equatable {
             seiBatchSize: seiBatchSize,
             seiFragmentSize: seiFragmentSize,
             seiAckTimeoutMillis: seiAckTimeoutMillis,
+            videoCodec: videoCodec,
+            videoWidth: videoWidth,
+            videoHeight: videoHeight,
+            videoFPS: videoFPS,
+            videoBitrate: videoBitrate,
+            videoHardwareAcceleration: videoHardwareAcceleration,
+            videoQRRecovery: videoQRRecovery,
+            videoQRSize: videoQRSize,
+            videoTileModule: videoTileModule,
+            videoTileRS: videoTileRS,
             startTimeoutMillis: startTimeoutMillis
         )
     }
@@ -176,14 +250,18 @@ public struct PacketTunnelConfiguration: Equatable {
         throw PacketTunnelConfigurationError.invalidValue(key)
     }
 
-    private static func optionalStringValue(_ key: String, from values: [String: Any]) -> String {
+    private static func optionalStringValue(
+        _ key: String,
+        from values: [String: Any],
+        defaultValue: String = ""
+    ) -> String {
         if let string = values[key] as? String {
             return string
         }
         if let string = values[key] as? NSString {
             return string as String
         }
-        return ""
+        return defaultValue
     }
 
     private static func intValue(_ key: String, from values: [String: Any]) throws -> Int {

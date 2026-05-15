@@ -3,6 +3,7 @@ import SwiftUI
 public struct ContentView: View {
     @StateObject private var viewModel: ClientViewModel
     @State private var isShowingImporter = false
+    @State private var isShowingProfileCreator = false
     @State private var isShowingLogs = false
     @State private var isShowingSettings = false
     @State private var detailDestination: DetailDestination?
@@ -22,7 +23,7 @@ public struct ContentView: View {
             Group {
                 if viewModel.profiles.isEmpty {
                     EmptyProfilesView(
-                        onAddProfile: viewModel.addProfile,
+                        onAddProfile: { isShowingProfileCreator = true },
                         onImportProfile: { isShowingImporter = true }
                     )
                 } else {
@@ -60,7 +61,7 @@ public struct ContentView: View {
 
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button {
-                        viewModel.addProfile()
+                        isShowingProfileCreator = true
                     } label: {
                         Label("Добавить профиль", systemImage: "plus")
                     }
@@ -89,7 +90,7 @@ public struct ContentView: View {
 
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button {
-                        viewModel.addProfile()
+                        isShowingProfileCreator = true
                     } label: {
                         Label("Добавить профиль", systemImage: "plus")
                     }
@@ -112,6 +113,17 @@ public struct ContentView: View {
                 viewModel.importValue(value)
                 isShowingImporter = false
             }
+        }
+        .sheet(isPresented: $isShowingProfileCreator) {
+            CreateProfileSheet(
+                initialProfile: initialCreatedProfile,
+                validationMessage: viewModel.validationMessage(for:),
+                onCancel: { isShowingProfileCreator = false },
+                onCreate: { profile in
+                    viewModel.createProfile(profile)
+                    isShowingProfileCreator = false
+                }
+            )
         }
         .sheet(item: $detailDestination) { destination in
             detailView(for: destination)
@@ -155,6 +167,12 @@ public struct ContentView: View {
             }
         }
         return groups
+    }
+
+    private var initialCreatedProfile: ConnectionProfile {
+        var profile = ConnectionProfile.empty
+        profile.name = "Профиль \(viewModel.profiles.count + 1)"
+        return profile
     }
 
     private func showProfileDetails(_ profile: ConnectionProfile) {
@@ -310,6 +328,66 @@ private struct ProfileSettingsScreen: View {
             }
             .onDisappear(perform: viewModel.saveDraft)
         }
+        #if os(macOS)
+        .frame(width: 460, height: 500)
+        #endif
+    }
+}
+
+private struct CreateProfileSheet: View {
+    @State private var profile: ConnectionProfile
+
+    let validationMessage: (ConnectionProfile) -> String?
+    let onCancel: () -> Void
+    let onCreate: (ConnectionProfile) -> Void
+
+    init(
+        initialProfile: ConnectionProfile,
+        validationMessage: @escaping (ConnectionProfile) -> String?,
+        onCancel: @escaping () -> Void,
+        onCreate: @escaping (ConnectionProfile) -> Void
+    ) {
+        _profile = State(initialValue: initialProfile)
+        self.validationMessage = validationMessage
+        self.onCancel = onCancel
+        self.onCreate = onCreate
+    }
+
+    private var currentValidationMessage: String? {
+        validationMessage(profile)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ProfileEditorView(
+                profile: $profile,
+                useSystemProxy: .constant(false),
+                selectedNetworkService: .constant("Wi-Fi"),
+                networkServices: [],
+                validationMessage: currentValidationMessage,
+                startsAdvancedExpanded: true,
+                onCommit: {}
+            )
+            .navigationTitle("Новый профиль")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Отмена", role: .cancel, action: onCancel)
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Готово") {
+                        onCreate(profile)
+                    }
+                    .disabled(currentValidationMessage != nil)
+                }
+            }
+        }
+        #if os(macOS)
+        .frame(width: 460, height: 500)
+        #endif
     }
 }
 
@@ -338,6 +416,7 @@ private struct ProfilesHomeView: View {
         List {
             Section {
                 ConnectionPanel(viewModel: viewModel)
+                    .listRowSeparator(.hidden, edges: .bottom)
                     #if os(iOS)
                     .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
                     #endif
@@ -349,6 +428,7 @@ private struct ProfilesHomeView: View {
                         ProfileSelectionRow(
                             profile: profile,
                             isSelected: viewModel.selectedProfileID == profile.id,
+                            showsInfo: true,
                             onSelect: { viewModel.selectProfile(profile.id) },
                             onInfo: { onShowProfileDetails(profile) }
                         )
@@ -373,6 +453,7 @@ private struct ProfilesHomeView: View {
                         onRefresh: { onRefreshSubscription(group.id) },
                         onInfo: { onShowSubscriptionDetails(group) }
                     )
+                    .listRowSeparator(.hidden, edges: .bottom)
                     .swipeActions {
                         Button("Удалить", role: .destructive) {
                             onDeleteSubscription(group.id)
@@ -383,9 +464,12 @@ private struct ProfilesHomeView: View {
                         ProfileSelectionRow(
                             profile: profile,
                             isSelected: viewModel.selectedProfileID == profile.id,
+                            showsInfo: false,
+                            leadingIndent: 40,
                             onSelect: { viewModel.selectProfile(profile.id) },
                             onInfo: { onShowProfileDetails(profile) }
                         )
+                        .listRowSeparator(.hidden, edges: .bottom)
                         .swipeActions {
                             Button("Удалить", role: .destructive) {
                                 viewModel.deleteProfiles(ids: [profile.id])
@@ -411,14 +495,14 @@ private struct ConnectionPanel: View {
     @ObservedObject var viewModel: ClientViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 7) {
                     StatusBadge(status: viewModel.status)
 
                     if viewModel.selectedProfileID != nil {
                         Text(connectionDetail)
-                            .font(.caption)
+                            .font(.callout.weight(.medium))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.72)
@@ -445,8 +529,8 @@ private struct ConnectionPanel: View {
         if viewModel.status.isRunning {
             Button(action: viewModel.stop) {
                 Image(systemName: "power")
-                    .font(.system(size: 20, weight: .semibold))
-                    .frame(width: 46, height: 36)
+                    .font(.system(size: 18, weight: .semibold))
+                    .frame(width: 36, height: 30)
             }
             .buttonStyle(.bordered)
             .controlSize(.regular)
@@ -455,8 +539,8 @@ private struct ConnectionPanel: View {
         } else {
             Button(action: viewModel.start) {
                 Image(systemName: "power")
-                    .font(.system(size: 20, weight: .semibold))
-                    .frame(width: 46, height: 36)
+                    .font(.system(size: 18, weight: .semibold))
+                    .frame(width: 36, height: 30)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.regular)
@@ -579,7 +663,7 @@ private struct ImportProfileSheet: View {
             }
         }
         #if os(macOS)
-        .frame(width: 500, height: 320)
+        .frame(width: 460, height: 300)
         #endif
     }
 
@@ -637,20 +721,22 @@ private struct SubscriptionSelectionRow: View {
 
             Spacer(minLength: 8)
 
-            Button(action: onRefresh) {
-                Image(systemName: isRefreshing ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
-                    .font(.system(size: 17, weight: .medium))
-                    .frame(width: 34, height: 34)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-            .disabled(isRefreshing || group.metadata.sourceURL == nil)
-            .accessibilityLabel("Обновить подписку")
+            HStack(spacing: 4) {
+                Button(action: onRefresh) {
+                    Image(systemName: isRefreshing ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
+                        .font(.system(size: 17, weight: .medium))
+                        .frame(width: 30, height: 30)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .disabled(isRefreshing || group.metadata.sourceURL == nil)
+                .accessibilityLabel("Обновить подписку")
 
-            InfoButton(action: onInfo)
+                InfoButton(action: onInfo)
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
 
     private var subscriptionDetail: String {
@@ -665,6 +751,8 @@ private struct SubscriptionSelectionRow: View {
 private struct ProfileSelectionRow: View {
     let profile: ConnectionProfile
     let isSelected: Bool
+    let showsInfo: Bool
+    var leadingIndent: CGFloat = 0
     let onSelect: () -> Void
     let onInfo: () -> Void
 
@@ -688,18 +776,21 @@ private struct ProfileSelectionRow: View {
                             .allowsTightening(true)
                     }
                     .layoutPriority(1)
-
-                    Spacer(minLength: 8)
-
-                    SelectionIndicator(isSelected: isSelected)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            InfoButton(action: onInfo)
+            HStack(spacing: 4) {
+                SelectionIndicator(isSelected: isSelected)
+                if showsInfo {
+                    InfoButton(action: onInfo)
+                }
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.leading, leadingIndent)
+        .padding(.vertical, 2)
     }
 }
 
@@ -716,7 +807,7 @@ private struct SelectionIndicator: View {
             }
         }
         .font(.system(size: 18, weight: .medium))
-        .frame(width: 34, height: 34)
+        .frame(width: 30, height: 30)
         .contentShape(Rectangle())
     }
 }
@@ -728,7 +819,7 @@ private struct InfoButton: View {
         Button(action: action) {
             Image(systemName: "info.circle")
                 .font(.system(size: 18, weight: .medium))
-                .frame(width: 34, height: 34)
+                .frame(width: 30, height: 30)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -896,6 +987,9 @@ private struct LogScreen: View {
                     }
                 }
         }
+        #if os(macOS)
+        .frame(width: 460, height: 500)
+        #endif
     }
 }
 
@@ -936,7 +1030,7 @@ private struct StatusBadge: View {
                 .fill(color)
                 .frame(width: 8, height: 8)
             Text(title)
-                .font(.caption.weight(.medium))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
         }
