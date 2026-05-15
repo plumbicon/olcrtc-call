@@ -67,7 +67,7 @@ if [[ -z "$DEVICE_ID" ]]; then
       exit 1
     fi
 
-    DEVICE_ID="$(xcrun simctl create "olcRTC iPhone" "$DEVICE_TYPE_ID" "$RUNTIME_ID")"
+    DEVICE_ID="$(xcrun simctl create "Godwit iPhone" "$DEVICE_TYPE_ID" "$RUNTIME_ID")"
   fi
   xcrun simctl boot "$DEVICE_ID" || true
 fi
@@ -75,7 +75,7 @@ fi
 open -a Simulator
 
 xcodebuild \
-  -project "$APPLE_DIR/OlcRTCClient.xcodeproj" \
+  -project "$APPLE_DIR/Godwit.xcodeproj" \
   -scheme "$SCHEME" \
   -configuration Debug \
   -destination "id=$DEVICE_ID" \
@@ -91,4 +91,4 @@ fi
 xcrun simctl install "$DEVICE_ID" "$APP_PATH"
 xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
 
-echo "Launched olcRTC on iOS Simulator device $DEVICE_ID"
+echo "Launched Godwit on iOS Simulator device $DEVICE_ID"

@@ -5,7 +5,7 @@
 - `olcrtc/`: Go-runtime, CLI, тесты, data-файлы и gomobile-пакет.
 - `apple/Package.swift`: SwiftPM-пакет с общим кодом приложения.
 - `apple/project.yml`: основной файл XcodeGen для app/extension targets.
-- `apple/OlcRTCClient.xcodeproj`: сгенерированный Xcode-проект.
+- `apple/Godwit.xcodeproj`: сгенерированный Xcode-проект.
 - `apple/Sources/OlcRTCClientKit`: общие SwiftUI views, models, stores,
   parsers и runtime managers.
 - `apple/Sources/OlcRTCClientMac`: точка входа macOS-приложения.
@@ -35,7 +35,7 @@ xcodegen generate
 Для быстрой проверки доступных targets и schemes:
 
 ```bash
-xcodebuild -list -project apple/OlcRTCClient.xcodeproj
+xcodebuild -list -project apple/Godwit.xcodeproj
 ```
 
 ## Ограничения

@@ -50,7 +50,7 @@ if command -v xcodegen >/dev/null 2>&1; then
 fi
 
 xcodebuild \
-  -project "$APPLE_DIR/OlcRTCClient.xcodeproj" \
+  -project "$APPLE_DIR/Godwit.xcodeproj" \
   -scheme "$SCHEME" \
   -configuration Debug \
   -destination "$DESTINATION" \

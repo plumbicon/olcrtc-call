@@ -26,7 +26,7 @@ public final class PacketTunnelManager {
 
     public init(
         providerBundleIdentifier: String? = nil,
-        localizedDescription: String = "olcRTC"
+        localizedDescription: String = "Godwit"
     ) {
         self.providerBundleIdentifier = providerBundleIdentifier
             ?? Bundle.main.bundleIdentifier.map { "\($0).PacketTunnel" }

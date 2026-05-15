@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CAEA0C6E3F5D7E3FF344EA5F"
+               BlueprintIdentifier = "C2E413E007C5452A1F648CC2"
                BuildableName = "OlcRTCClient macOS.app"
                BlueprintName = "OlcRTCClient macOS"
-               ReferencedContainer = "container:OlcRTCClient.xcodeproj">
+               ReferencedContainer = "container:Godwit.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,10 +32,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CAEA0C6E3F5D7E3FF344EA5F"
+            BlueprintIdentifier = "C2E413E007C5452A1F648CC2"
             BuildableName = "OlcRTCClient macOS.app"
             BlueprintName = "OlcRTCClient macOS"
-            ReferencedContainer = "container:OlcRTCClient.xcodeproj">
+            ReferencedContainer = "container:Godwit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -55,10 +55,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CAEA0C6E3F5D7E3FF344EA5F"
+            BlueprintIdentifier = "C2E413E007C5452A1F648CC2"
             BuildableName = "OlcRTCClient macOS.app"
             BlueprintName = "OlcRTCClient macOS"
-            ReferencedContainer = "container:OlcRTCClient.xcodeproj">
+            ReferencedContainer = "container:Godwit.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -81,10 +81,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CAEA0C6E3F5D7E3FF344EA5F"
+            BlueprintIdentifier = "C2E413E007C5452A1F648CC2"
             BuildableName = "OlcRTCClient macOS.app"
             BlueprintName = "OlcRTCClient macOS"
-            ReferencedContainer = "container:OlcRTCClient.xcodeproj">
+            ReferencedContainer = "container:Godwit.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

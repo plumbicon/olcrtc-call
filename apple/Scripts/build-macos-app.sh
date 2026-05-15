@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 APPLE_DIR="$ROOT_DIR/apple"
 OLCRTC_DIR="$ROOT_DIR/olcrtc"
 CONFIGURATION="${CONFIGURATION:-debug}"
-APP_DIR="$APPLE_DIR/.build/olcRTC.app"
+APP_DIR="$APPLE_DIR/.build/Godwit.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
@@ -23,7 +23,7 @@ fi
 rm -rf "$APP_DIR"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 
-cp "$SWIFT_BINARY" "$MACOS_DIR/olcRTC"
+cp "$SWIFT_BINARY" "$MACOS_DIR/Godwit"
 cp "$APPLE_DIR/.build/olcrtc-macos" "$RESOURCES_DIR/olcrtc-macos"
 cp -R "$OLCRTC_DIR/data" "$RESOURCES_DIR/data"
 cp "$APPLE_DIR/Resources/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
@@ -37,15 +37,15 @@ cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleExecutable</key>
-  <string>olcRTC</string>
+  <string>Godwit</string>
   <key>CFBundleIdentifier</key>
   <string>community.openlibre.olcrtc.macos.dev</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>olcRTC</string>
+  <string>Godwit</string>
   <key>CFBundleDisplayName</key>
-  <string>olcRTC</string>
+  <string>Godwit</string>
   <key>CFBundleIconFile</key>
   <string>AppIcon</string>
   <key>CFBundlePackageType</key>
@@ -64,7 +64,7 @@ cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-chmod +x "$MACOS_DIR/olcRTC" "$RESOURCES_DIR/olcrtc-macos"
+chmod +x "$MACOS_DIR/Godwit" "$RESOURCES_DIR/olcrtc-macos"
 
 if command -v codesign >/dev/null 2>&1; then
   codesign --force --deep --sign - "$APP_DIR" >/dev/null

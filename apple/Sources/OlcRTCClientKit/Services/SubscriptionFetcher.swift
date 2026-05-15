@@ -249,7 +249,7 @@ private final class HTTPSResolvedEndpointRequest {
         let request = [
             "GET \(requestPath) HTTP/1.1",
             "Host: \(hostHeader)",
-            "User-Agent: olcRTC Apple",
+            "User-Agent: Godwit Apple",
             "Accept: text/plain, */*",
             "Connection: close",
             "",

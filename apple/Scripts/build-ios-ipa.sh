@@ -8,7 +8,7 @@ CONFIGURATION="${CONFIGURATION:-Release}"
 EXPORT_METHOD="${EXPORT_METHOD:-development}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-$APPLE_DIR/.build/ios-archive}"
 EXPORT_DIR="${EXPORT_DIR:-$APPLE_DIR/.build/ios-ipa}"
-ARCHIVE_PATH="$ARCHIVE_DIR/OlcRTCClient.xcarchive"
+ARCHIVE_PATH="$ARCHIVE_DIR/Godwit.xcarchive"
 EXPORT_OPTIONS="$ARCHIVE_DIR/ExportOptions.plist"
 
 if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app/Contents/Developer ]]; then
@@ -81,7 +81,7 @@ rm -rf "$ARCHIVE_DIR" "$EXPORT_DIR"
 mkdir -p "$ARCHIVE_DIR" "$EXPORT_DIR"
 
 xcodebuild \
-  -project "$APPLE_DIR/OlcRTCClient.xcodeproj" \
+  -project "$APPLE_DIR/Godwit.xcodeproj" \
   -scheme "$SCHEME" \
   -configuration "$CONFIGURATION" \
   -destination "generic/platform=iOS" \

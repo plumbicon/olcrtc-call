@@ -38,7 +38,7 @@ public struct ContentView: View {
                     )
                 }
             }
-            .navigationTitle("olcRTC")
+            .navigationTitle("Godwit")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif

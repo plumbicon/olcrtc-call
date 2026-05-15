@@ -1,0 +1,628 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F7C2F37D7627C896BB675D3 /* OlcRTCClientKit in Frameworks */ = {isa = PBXBuildFile; productRef = A861C54970BF434BC46E36E9 /* OlcRTCClientKit */; };
+		1A4140BDC4870E95AD299AB4 /* OlcRTCClientKit in Frameworks */ = {isa = PBXBuildFile; productRef = F4F96AED4919861ED1DD462D /* OlcRTCClientKit */; };
+		447FF1151F2D9C939B03188F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF45A92C833F7B5CD177992A /* Assets.xcassets */; };
+		6BA4598783151A0965B595E5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2FF4A5572B529CBDC8859A85 /* Assets.xcassets */; };
+		80F65DB9ED27C2AC20E0BF24 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD6ECD13ADEFB676FA1BB3F /* PacketTunnelProvider.swift */; };
+		842524FB71AB5BF098672CE4 /* OlcRTCPacketTunnel.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2F4D406075B3186EB7125F4E /* OlcRTCPacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A7E37746DBE9776CAA0D0A7F /* Tun2SocksKit in Frameworks */ = {isa = PBXBuildFile; productRef = D53D604FD535DA93D1E0ACE2 /* Tun2SocksKit */; };
+		C788C81A86D178EEFAD4FB52 /* OlcRTCClientKit in Frameworks */ = {isa = PBXBuildFile; productRef = 971856C63D23599DD558D751 /* OlcRTCClientKit */; };
+		C8292B9E9A027F591368C1F0 /* OlcRTCClientiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF8EF6C2B3C5313E4A93E2CA /* OlcRTCClientiOSApp.swift */; };
+		DB43169DBADA26491E9A2C8C /* OlcRTCClientMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47ED25B2BD9797D2631E00B5 /* OlcRTCClientMacApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F817415AF9C652B3C501F709 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 930187513E4045079A3031AD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 862BFEBD42D77F6FDAFF2E95;
+			remoteInfo = OlcRTCPacketTunnel;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		86CE51B8381B8BE63A0A9957 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				842524FB71AB5BF098672CE4 /* OlcRTCPacketTunnel.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		2F4D406075B3186EB7125F4E /* OlcRTCPacketTunnel.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = OlcRTCPacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2FF4A5572B529CBDC8859A85 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3578882557AFC537CF835417 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		3A5930A5C2CEE0C5A7A53308 /* OlcRTCClient iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "OlcRTCClient iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D6B931F90D6712C6F7F6AF8 /* OlcRTCClientiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OlcRTCClientiOS.entitlements; sourceTree = "<group>"; };
+		47ED25B2BD9797D2631E00B5 /* OlcRTCClientMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OlcRTCClientMacApp.swift; sourceTree = "<group>"; };
+		AC6C10DAAB15281DD213DE1C /* OlcRTCPacketTunnel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OlcRTCPacketTunnel.entitlements; sourceTree = "<group>"; };
+		BF45A92C833F7B5CD177992A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C0CC302F4508D6BF0C0B15C9 /* OlcRTCClient macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OlcRTCClient macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAD6ECD13ADEFB676FA1BB3F /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
+		EF8EF6C2B3C5313E4A93E2CA /* OlcRTCClientiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OlcRTCClientiOSApp.swift; sourceTree = "<group>"; };
+		F44AABC54AB0D178E9D385B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FDB2AF3A6450456853905A77 /* apple */ = {isa = PBXFileReference; lastKnownFileType = folder; name = apple; path = .; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1B10CD4300DB9F7CE3D23F01 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F7C2F37D7627C896BB675D3 /* OlcRTCClientKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		22524732CCB859DF419A20E0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C788C81A86D178EEFAD4FB52 /* OlcRTCClientKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAE976D2D152EF59FCBBFF2E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A4140BDC4870E95AD299AB4 /* OlcRTCClientKit in Frameworks */,
+				A7E37746DBE9776CAA0D0A7F /* Tun2SocksKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		052DE44DC24AABC6FF297F65 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				FDB2AF3A6450456853905A77 /* apple */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		30F9FC3DE1809DD0B953237E /* OlcRTCClientiOS */ = {
+			isa = PBXGroup;
+			children = (
+				2FF4A5572B529CBDC8859A85 /* Assets.xcassets */,
+				F44AABC54AB0D178E9D385B6 /* Info.plist */,
+				3D6B931F90D6712C6F7F6AF8 /* OlcRTCClientiOS.entitlements */,
+				EF8EF6C2B3C5313E4A93E2CA /* OlcRTCClientiOSApp.swift */,
+			);
+			name = OlcRTCClientiOS;
+			path = Sources/OlcRTCClientiOS;
+			sourceTree = "<group>";
+		};
+		716D87C59B5349F5E18C0180 /* OlcRTCClientMac */ = {
+			isa = PBXGroup;
+			children = (
+				BF45A92C833F7B5CD177992A /* Assets.xcassets */,
+				47ED25B2BD9797D2631E00B5 /* OlcRTCClientMacApp.swift */,
+			);
+			name = OlcRTCClientMac;
+			path = Sources/OlcRTCClientMac;
+			sourceTree = "<group>";
+		};
+		783F456CF3273F9555A02C66 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3A5930A5C2CEE0C5A7A53308 /* OlcRTCClient iOS.app */,
+				C0CC302F4508D6BF0C0B15C9 /* OlcRTCClient macOS.app */,
+				2F4D406075B3186EB7125F4E /* OlcRTCPacketTunnel.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C6A9B938350DC36427AA7F38 = {
+			isa = PBXGroup;
+			children = (
+				30F9FC3DE1809DD0B953237E /* OlcRTCClientiOS */,
+				716D87C59B5349F5E18C0180 /* OlcRTCClientMac */,
+				F6E21D55104EBA38E50E072F /* OlcRTCPacketTunnel */,
+				052DE44DC24AABC6FF297F65 /* Packages */,
+				783F456CF3273F9555A02C66 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F6E21D55104EBA38E50E072F /* OlcRTCPacketTunnel */ = {
+			isa = PBXGroup;
+			children = (
+				3578882557AFC537CF835417 /* Info.plist */,
+				AC6C10DAAB15281DD213DE1C /* OlcRTCPacketTunnel.entitlements */,
+				CAD6ECD13ADEFB676FA1BB3F /* PacketTunnelProvider.swift */,
+			);
+			name = OlcRTCPacketTunnel;
+			path = Sources/OlcRTCPacketTunnel;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		862BFEBD42D77F6FDAFF2E95 /* OlcRTCPacketTunnel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21884399BCA3FA64C6E622D2 /* Build configuration list for PBXNativeTarget "OlcRTCPacketTunnel" */;
+			buildPhases = (
+				EEFFB8D5D910B672A19F04F5 /* Sources */,
+				CAE976D2D152EF59FCBBFF2E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OlcRTCPacketTunnel;
+			packageProductDependencies = (
+				F4F96AED4919861ED1DD462D /* OlcRTCClientKit */,
+				D53D604FD535DA93D1E0ACE2 /* Tun2SocksKit */,
+			);
+			productName = OlcRTCPacketTunnel;
+			productReference = 2F4D406075B3186EB7125F4E /* OlcRTCPacketTunnel.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		C2E413E007C5452A1F648CC2 /* OlcRTCClient macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 353F864927786963DBA958D6 /* Build configuration list for PBXNativeTarget "OlcRTCClient macOS" */;
+			buildPhases = (
+				F3230008BE3B560C3FFC9BB3 /* Sources */,
+				72ECE5B6C991DEAB9139FB53 /* Resources */,
+				22524732CCB859DF419A20E0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "OlcRTCClient macOS";
+			packageProductDependencies = (
+				971856C63D23599DD558D751 /* OlcRTCClientKit */,
+			);
+			productName = "OlcRTCClient macOS";
+			productReference = C0CC302F4508D6BF0C0B15C9 /* OlcRTCClient macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D21B4EC9BE3DA01BF59FC886 /* OlcRTCClient iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 05F41261A9D8750D18C5C80D /* Build configuration list for PBXNativeTarget "OlcRTCClient iOS" */;
+			buildPhases = (
+				5D3F1422AF3FC77C946DE2BD /* Sources */,
+				B0C2EAA6CE46D4DDA2670925 /* Resources */,
+				1B10CD4300DB9F7CE3D23F01 /* Frameworks */,
+				86CE51B8381B8BE63A0A9957 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BC727C062AB1E67895E9EF68 /* PBXTargetDependency */,
+			);
+			name = "OlcRTCClient iOS";
+			packageProductDependencies = (
+				A861C54970BF434BC46E36E9 /* OlcRTCClientKit */,
+			);
+			productName = "OlcRTCClient iOS";
+			productReference = 3A5930A5C2CEE0C5A7A53308 /* OlcRTCClient iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		930187513E4045079A3031AD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					862BFEBD42D77F6FDAFF2E95 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					C2E413E007C5452A1F648CC2 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					D21B4EC9BE3DA01BF59FC886 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 62B9D180F38511C3950E0D78 /* Build configuration list for PBXProject "Godwit" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = C6A9B938350DC36427AA7F38;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				68D17A21C26D5D77DB6D9573 /* XCRemoteSwiftPackageReference "Tun2SocksKit" */,
+				2D2EEB50E487027C5BB01500 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 783F456CF3273F9555A02C66 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D21B4EC9BE3DA01BF59FC886 /* OlcRTCClient iOS */,
+				C2E413E007C5452A1F648CC2 /* OlcRTCClient macOS */,
+				862BFEBD42D77F6FDAFF2E95 /* OlcRTCPacketTunnel */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		72ECE5B6C991DEAB9139FB53 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				447FF1151F2D9C939B03188F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B0C2EAA6CE46D4DDA2670925 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6BA4598783151A0965B595E5 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5D3F1422AF3FC77C946DE2BD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8292B9E9A027F591368C1F0 /* OlcRTCClientiOSApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EEFFB8D5D910B672A19F04F5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80F65DB9ED27C2AC20E0BF24 /* PacketTunnelProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3230008BE3B560C3FFC9BB3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB43169DBADA26491E9A2C8C /* OlcRTCClientMacApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BC727C062AB1E67895E9EF68 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 862BFEBD42D77F6FDAFF2E95 /* OlcRTCPacketTunnel */;
+			targetProxy = F817415AF9C652B3C501F709 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1A76A26720E765A4E803D52D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		2343C42FFF4E4B7914858DCC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/OlcRTCClientiOS/OlcRTCClientiOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Sources/OlcRTCClientiOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = community.openlibre.olcrtc.ios;
+				PRODUCT_NAME = Godwit;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		785BF83ADED7470A660136A7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Godwit;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = community.openlibre.olcrtc.macos;
+				PRODUCT_NAME = Godwit;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		9409D7D117EDB752E5184000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Godwit;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = community.openlibre.olcrtc.macos;
+				PRODUCT_NAME = Godwit;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		993E3F840D4EE3F1F5DB90E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/OlcRTCClientiOS/OlcRTCClientiOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Sources/OlcRTCClientiOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = community.openlibre.olcrtc.ios;
+				PRODUCT_NAME = Godwit;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A6DC7A056F704889227E49EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		D90E3864D983BB576897780A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Sources/OlcRTCPacketTunnel/OlcRTCPacketTunnel.entitlements;
+				INFOPLIST_FILE = Sources/OlcRTCPacketTunnel/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = community.openlibre.olcrtc.ios.PacketTunnel;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DFB95EA2A51593D94853E578 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Sources/OlcRTCPacketTunnel/OlcRTCPacketTunnel.entitlements;
+				INFOPLIST_FILE = Sources/OlcRTCPacketTunnel/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = community.openlibre.olcrtc.ios.PacketTunnel;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		05F41261A9D8750D18C5C80D /* Build configuration list for PBXNativeTarget "OlcRTCClient iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2343C42FFF4E4B7914858DCC /* Debug */,
+				993E3F840D4EE3F1F5DB90E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		21884399BCA3FA64C6E622D2 /* Build configuration list for PBXNativeTarget "OlcRTCPacketTunnel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D90E3864D983BB576897780A /* Debug */,
+				DFB95EA2A51593D94853E578 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		353F864927786963DBA958D6 /* Build configuration list for PBXNativeTarget "OlcRTCClient macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				785BF83ADED7470A660136A7 /* Debug */,
+				9409D7D117EDB752E5184000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		62B9D180F38511C3950E0D78 /* Build configuration list for PBXProject "Godwit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A76A26720E765A4E803D52D /* Debug */,
+				A6DC7A056F704889227E49EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		2D2EEB50E487027C5BB01500 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		68D17A21C26D5D77DB6D9573 /* XCRemoteSwiftPackageReference "Tun2SocksKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/EbrahimTahernejad/Tun2SocksKit.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		971856C63D23599DD558D751 /* OlcRTCClientKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OlcRTCClientKit;
+		};
+		A861C54970BF434BC46E36E9 /* OlcRTCClientKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OlcRTCClientKit;
+		};
+		D53D604FD535DA93D1E0ACE2 /* Tun2SocksKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 68D17A21C26D5D77DB6D9573 /* XCRemoteSwiftPackageReference "Tun2SocksKit" */;
+			productName = Tun2SocksKit;
+		};
+		F4F96AED4919861ED1DD462D /* OlcRTCClientKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OlcRTCClientKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 930187513E4045079A3031AD /* Project object */;
+}

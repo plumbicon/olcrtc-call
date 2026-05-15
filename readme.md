@@ -1,6 +1,6 @@
-# olcRTC Call
+# Godwit
 
-macOS/iOS-клиент для olcRTC.
+macOS/iOS-клиент Godwit для olcRTC.
 
 ## Требования
 
@@ -9,7 +9,7 @@ macOS/iOS-клиент для olcRTC.
 - Xcode или Command Line Tools для macOS/SwiftPM-сборок.
 - Полный Xcode с iOS SDK для iOS-сборок.
 - `gomobile`.
-- `xcodegen`, если нужно пересоздавать `apple/OlcRTCClient.xcodeproj`.
+- `xcodegen`, если нужно пересоздавать `apple/Godwit.xcodeproj`.
 - Sideloadly, если нужно установить неподписанный local-SOCKS IPA на iPhone.
 
 Если Xcode только что установлен:
@@ -33,7 +33,7 @@ sudo xcodebuild -license accept
 Результат:
 
 ```text
-apple/.build/ios-unsigned-local/OlcRTCClient-unsigned-local.ipa
+apple/.build/ios-unsigned-local/Godwit-unsigned-local.ipa
 ```
 
 Этот IPA собирается с `LOCAL_SOCKS_ONLY`: в нем остается local SOCKS proxy, но
@@ -61,7 +61,7 @@ iOS background runtime is active for local SOCKS.
 
 4. Открыть Sideloadly.
 5. Перетащить файл
-   `apple/.build/ios-unsigned-local/OlcRTCClient-unsigned-local.ipa` в окно
+   `apple/.build/ios-unsigned-local/Godwit-unsigned-local.ipa` в окно
    Sideloadly или выбрать его через кнопку IPA.
 6. Выбрать подключенный iPhone в списке устройств.
 7. Ввести Apple ID. Для local-SOCKS IPA подходит обычный бесплатный Apple ID.
@@ -71,7 +71,7 @@ iOS background runtime is active for local SOCKS.
    developer profile, связанный с использованным Apple ID.
 10. На iOS 16 и новее включить Developer Mode: Settings -> Privacy & Security
     -> Developer Mode, затем перезагрузить устройство, если iOS попросит.
-11. Запустить olcRTC на iPhone, выбрать профиль и нажать Start.
+11. Запустить Godwit на iPhone, выбрать профиль и нажать Start.
 12. В Happ или другом приложении для маршрутизации трафика указать SOCKS5 proxy
     `127.0.0.1:<port>`.
 
@@ -89,13 +89,13 @@ iOS background runtime is active for local SOCKS.
 
 ```bash
 ./apple/Scripts/build-macos-app.sh
-open ./apple/.build/olcRTC.app
+open ./apple/.build/Godwit.app
 ```
 
 Скрипт собирает:
 
 - `apple/.build/olcrtc-macos`: Go CLI helper.
-- `apple/.build/olcRTC.app`: запускаемый macOS app bundle.
+- `apple/.build/Godwit.app`: запускаемый macOS app bundle.
 
 При успешном старте в Events должно появиться:
 
@@ -153,7 +153,7 @@ apple/.build/ios-ipa/
 Для тестирования с реального iPhone через Xcode:
 
 ```bash
-open ./apple/OlcRTCClient.xcodeproj
+open ./apple/Godwit.xcodeproj
 ```
 
 В Xcode нужно настроить signing для обоих targets:

@@ -54,4 +54,4 @@ fi
 cd "$APPLE_DIR"
 xcodegen generate
 
-echo "Ready: $APPLE_DIR/OlcRTCClient.xcodeproj"
+echo "Ready: $APPLE_DIR/Godwit.xcodeproj"

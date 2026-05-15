@@ -7,7 +7,7 @@ SCHEME="OlcRTCClient iOS"
 CONFIGURATION="${CONFIGURATION:-Release}"
 BUILD_DIR="${BUILD_DIR:-$APPLE_DIR/.build/ios-unsigned-local}"
 PAYLOAD_DIR="$BUILD_DIR/Payload"
-IPA_PATH="$BUILD_DIR/OlcRTCClient-unsigned-local.ipa"
+IPA_PATH="$BUILD_DIR/Godwit-unsigned-local.ipa"
 
 if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app/Contents/Developer ]]; then
   export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
@@ -42,7 +42,7 @@ rm -rf "$BUILD_DIR"
 mkdir -p "$PAYLOAD_DIR"
 
 xcodebuild \
-  -project "$APPLE_DIR/OlcRTCClient.xcodeproj" \
+  -project "$APPLE_DIR/Godwit.xcodeproj" \
   -scheme "$SCHEME" \
   -configuration "$CONFIGURATION" \
   -sdk iphoneos \
