@@ -9,11 +9,11 @@ public enum ClientStatus: Equatable {
 
     public var title: String {
         switch self {
-        case .stopped: "Stopped"
-        case .starting: "Starting"
-        case .ready: "Ready"
-        case .stopping: "Stopping"
-        case .failed: "Failed"
+        case .stopped: "Отключено"
+        case .starting: "Подключение..."
+        case .ready: "Подключено"
+        case .stopping: "Отключение..."
+        case .failed: "Ошибка"
         }
     }
 

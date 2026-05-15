@@ -17,7 +17,7 @@ public struct LogView: View {
     public var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Label("Events", systemImage: "list.bullet.rectangle")
+                Label("Журнал", systemImage: "list.bullet.rectangle")
                     #if os(iOS)
                     .font(.subheadline.weight(.semibold))
                     #else
@@ -25,11 +25,11 @@ public struct LogView: View {
                     #endif
                 Spacer()
                 Button(action: copyLogs) {
-                    Label("Copy", systemImage: "doc.on.doc")
+                    Label("Копировать", systemImage: "doc.on.doc")
                 }
                 .disabled(logs.isEmpty)
                 Button(action: onClear) {
-                    Label("Clear", systemImage: "trash")
+                    Label("Очистить", systemImage: "trash")
                 }
                 .disabled(logs.isEmpty)
             }
@@ -39,7 +39,7 @@ public struct LogView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 6) {
                         if logs.isEmpty {
-                            Text("No events yet.")
+                            Text("Записей пока нет.")
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.vertical, 8)
@@ -55,13 +55,13 @@ public struct LogView: View {
                     }
                     .padding()
                 }
-                .frame(minHeight: 120, idealHeight: 180, maxHeight: 240)
                 .onChange(of: logs.count) { count in
                     guard count > 0 else { return }
                     proxy.scrollTo(count - 1, anchor: .bottom)
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         #if os(iOS)
         .font(.subheadline)
         #endif

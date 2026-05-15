@@ -26,10 +26,10 @@ public enum Transport: String, CaseIterable, Codable, Identifiable {
 
     public var title: String {
         switch self {
-        case .vp8channel: "VP8 channel"
-        case .datachannel: "Data channel"
-        case .seichannel: "SEI channel"
-        case .videochannel: "Video channel"
+        case .vp8channel: "vp8"
+        case .datachannel: "datachannel"
+        case .seichannel: "seichannel"
+        case .videochannel: "videochannel"
         }
     }
 }
@@ -67,10 +67,10 @@ public struct ConnectionProfile: Codable, Equatable, Identifiable {
         roomID: String = "",
         clientID: String = "",
         keyHex: String = "",
-        socksPort: Int = 10808,
+        socksPort: Int = 60_180,
         socksUser: String = "",
         socksPass: String = "",
-        dnsServer: String = "1.1.1.1:53",
+        dnsServer: String = "77.88.8.8",
         debugLogging: Bool = false,
         vp8FPS: Int = 60,
         vp8BatchSize: Int = 8,
@@ -135,10 +135,10 @@ public struct ConnectionProfile: Codable, Equatable, Identifiable {
         roomID = try container.decodeIfPresent(String.self, forKey: .roomID) ?? ""
         clientID = try container.decodeIfPresent(String.self, forKey: .clientID) ?? ""
         keyHex = try container.decodeIfPresent(String.self, forKey: .keyHex) ?? ""
-        socksPort = try container.decodeIfPresent(Int.self, forKey: .socksPort) ?? 10808
+        socksPort = try container.decodeIfPresent(Int.self, forKey: .socksPort) ?? 60_180
         socksUser = try container.decodeIfPresent(String.self, forKey: .socksUser) ?? ""
         socksPass = try container.decodeIfPresent(String.self, forKey: .socksPass) ?? ""
-        dnsServer = try container.decodeIfPresent(String.self, forKey: .dnsServer) ?? "1.1.1.1:53"
+        dnsServer = try container.decodeIfPresent(String.self, forKey: .dnsServer) ?? "77.88.8.8"
         debugLogging = try container.decodeIfPresent(Bool.self, forKey: .debugLogging) ?? false
         vp8FPS = try container.decodeIfPresent(Int.self, forKey: .vp8FPS) ?? 60
         vp8BatchSize = try container.decodeIfPresent(Int.self, forKey: .vp8BatchSize) ?? 8
@@ -151,7 +151,7 @@ public struct ConnectionProfile: Codable, Equatable, Identifiable {
     }
 
     public static var empty: ConnectionProfile {
-        ConnectionProfile(name: "New profile")
+        ConnectionProfile(name: "Новый профиль")
     }
 
     public func normalizedForCurrentDefaults() -> ConnectionProfile {

@@ -3,6 +3,9 @@ import SwiftUI
 public struct ContentView: View {
     @StateObject private var viewModel: ClientViewModel
     @State private var isShowingImporter = false
+    @State private var isShowingLogs = false
+    @State private var isShowingSettings = false
+    @State private var detailDestination: DetailDestination?
 
     @MainActor
     public init() {
@@ -15,163 +18,123 @@ public struct ContentView: View {
     }
 
     public var body: some View {
-        NavigationSplitView {
-            ProfileSidebar(viewModel: viewModel, isShowingImporter: $isShowingImporter)
-        } detail: {
-            VStack(spacing: 0) {
-                ClientHeaderView(viewModel: viewModel)
-                Divider()
-                if viewModel.selectedProfileID == nil {
-                    EmptyProfileDetailView(
+        NavigationStack {
+            Group {
+                if viewModel.profiles.isEmpty {
+                    EmptyProfilesView(
                         onAddProfile: viewModel.addProfile,
                         onImportProfile: { isShowingImporter = true }
                     )
                 } else {
-                    ProfileEditorView(
-                        profile: $viewModel.draft,
-                        useSystemProxy: $viewModel.useSystemProxy,
-                        selectedNetworkService: $viewModel.selectedNetworkService,
-                        networkServices: viewModel.networkServices,
-                        validationMessage: viewModel.validationMessage,
-                        onCommit: viewModel.saveDraft
+                    ProfilesHomeView(
+                        viewModel: viewModel,
+                        subscriptionGroups: subscriptionGroups,
+                        ungroupedProfiles: ungroupedProfiles,
+                        onShowProfileDetails: showProfileDetails,
+                        onShowSubscriptionDetails: showSubscriptionDetails,
+                        onRefreshSubscription: viewModel.refreshSubscription,
+                        onDeleteSubscription: viewModel.deleteSubscription
                     )
                 }
-                Divider()
-                LogView(logs: viewModel.logs) {
-                    viewModel.clearLogs()
-                }
             }
-            .navigationTitle(viewModel.selectedProfileName)
+            .navigationTitle("olcRTC")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
+            .toolbar {
+                #if os(iOS)
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    Button {
+                        isShowingSettings = true
+                    } label: {
+                        Label("Настройки", systemImage: "gearshape")
+                    }
+                    .disabled(viewModel.selectedProfileID == nil)
+
+                    Button {
+                        isShowingLogs = true
+                    } label: {
+                        Label("Журнал", systemImage: "list.bullet.rectangle")
+                    }
+                }
+
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        viewModel.addProfile()
+                    } label: {
+                        Label("Добавить профиль", systemImage: "plus")
+                    }
+
+                    Button {
+                        isShowingImporter = true
+                    } label: {
+                        Label("Импортировать", systemImage: "square.and.arrow.down")
+                    }
+                }
+                #else
+                ToolbarItemGroup(placement: .navigation) {
+                    Button {
+                        isShowingSettings = true
+                    } label: {
+                        Label("Настройки", systemImage: "gearshape")
+                    }
+                    .disabled(viewModel.selectedProfileID == nil)
+
+                    Button {
+                        isShowingLogs = true
+                    } label: {
+                        Label("Журнал", systemImage: "list.bullet.rectangle")
+                    }
+                }
+
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        viewModel.addProfile()
+                    } label: {
+                        Label("Добавить профиль", systemImage: "plus")
+                    }
+
+                    Button {
+                        isShowingImporter = true
+                    } label: {
+                        Label("Импортировать", systemImage: "square.and.arrow.down")
+                    }
+                }
+                #endif
+            }
         }
         #if os(iOS)
         .dynamicTypeSize(.small ... .large)
         .controlSize(.small)
         #endif
         .sheet(isPresented: $isShowingImporter) {
-            AddProfileImportSheet(isImporting: viewModel.isImporting) { value in
+            ImportProfileSheet(isImporting: viewModel.isImporting) { value in
                 viewModel.importValue(value)
                 isShowingImporter = false
             }
         }
-    }
-}
-
-private struct EmptyProfileDetailView: View {
-    let onAddProfile: () -> Void
-    let onImportProfile: () -> Void
-
-    var body: some View {
-        VStack(spacing: 14) {
-            Spacer(minLength: 24)
-
-            Image(systemName: "person.crop.circle.badge.plus")
-                .font(.system(size: 42))
-                .foregroundStyle(.secondary)
-
-            Text("No profiles")
-                .font(.title3.weight(.semibold))
-
-            HStack(spacing: 10) {
-                Button(action: onAddProfile) {
-                    Label("Add Profile", systemImage: "plus")
-                }
-                .buttonStyle(.borderedProminent)
-
-                Button(action: onImportProfile) {
-                    Label("Import Profile", systemImage: "square.and.arrow.down")
-                }
-            }
-
-            Spacer(minLength: 24)
+        .sheet(item: $detailDestination) { destination in
+            detailView(for: destination)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-    }
-}
-
-private struct ProfileSidebar: View {
-    @ObservedObject var viewModel: ClientViewModel
-    @Binding var isShowingImporter: Bool
-
-    var body: some View {
-        List(selection: selection) {
-            let groups = subscriptionGroups
-            let ungrouped = ungroupedProfiles
-
-            if !ungrouped.isEmpty {
-                Section("Profiles") {
-                    ForEach(ungrouped) { profile in
-                        SelectableProfileRow(profile: profile)
-                            .tag(Optional(profile.id))
-                            .contextMenu {
-                                Button("Delete", role: .destructive) {
-                                    viewModel.deleteProfiles(ids: [profile.id])
-                                }
-                            }
-                    }
-                    .onDelete { offsets in
-                        let ids = offsets.compactMap { ungrouped.indices.contains($0) ? ungrouped[$0].id : nil }
-                        viewModel.deleteProfiles(ids: ids)
-                    }
-                }
-            }
-
-            ForEach(groups) { group in
-                Section {
-                    SubscriptionHeader(
-                        group: group,
-                        isRefreshing: viewModel.refreshingSubscriptionIDs.contains(group.id),
-                        onRefresh: { viewModel.refreshSubscription(group.id) },
-                        onDelete: { viewModel.deleteSubscription(group.id) }
-                    )
-                    #if os(iOS)
-                    .listRowSeparator(.hidden, edges: .top)
-                    #endif
-
-                    ForEach(group.profiles) { profile in
-                        SelectableProfileRow(profile: profile)
-                            .tag(Optional(profile.id))
-                            .contextMenu {
-                                Button("Delete", role: .destructive) {
-                                    viewModel.deleteProfiles(ids: [profile.id])
-                                }
-                            }
-                    }
-                }
+        .sheet(isPresented: $isShowingSettings) {
+            ProfileSettingsScreen(viewModel: viewModel)
+        }
+        .logPresentation(isPresented: $isShowingLogs) {
+            LogScreen(logs: viewModel.logs) {
+                viewModel.clearLogs()
             }
         }
-        .navigationTitle("Profiles")
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button(action: viewModel.addProfile) {
-                    Label("Add Profile", systemImage: "plus")
+        .overlay(alignment: .top) {
+            if let message = viewModel.importErrorMessage {
+                ImportErrorBanner(message: message) {
+                    viewModel.clearImportError()
                 }
-            }
-
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    isShowingImporter = true
-                } label: {
-                    Label("Import Profile", systemImage: "square.and.arrow.down")
-                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        #if os(macOS)
-        .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 320)
-        #endif
-    }
-
-    private var selection: Binding<UUID?> {
-        Binding(
-            get: { viewModel.selectedProfileID },
-            set: { viewModel.selectProfile($0) }
-        )
+        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: viewModel.importErrorMessage)
     }
 
     private var ungroupedProfiles: [ConnectionProfile] {
@@ -193,9 +156,371 @@ private struct ProfileSidebar: View {
         }
         return groups
     }
+
+    private func showProfileDetails(_ profile: ConnectionProfile) {
+        viewModel.selectProfile(profile.id)
+        detailDestination = .profile(profile.id)
+    }
+
+    private func showSubscriptionDetails(_ group: SubscriptionGroup) {
+        detailDestination = .subscription(group.id)
+    }
+
+    @ViewBuilder
+    private func detailView(for destination: DetailDestination) -> some View {
+        NavigationStack {
+            switch destination {
+            case .profile:
+                ProfileDetailScreen(viewModel: viewModel)
+
+            case .subscription(let id):
+                if let group = subscriptionGroups.first(where: { $0.id == id }) {
+                    SubscriptionDetailView(
+                        group: group,
+                        isRefreshing: viewModel.refreshingSubscriptionIDs.contains(id),
+                        onRefresh: { viewModel.refreshSubscription(id) },
+                        onUpdateSource: { sourceURL in
+                            viewModel.updateSubscriptionSource(id, sourceURL: sourceURL)
+                        },
+                        onDelete: {
+                            viewModel.deleteSubscription(id)
+                            detailDestination = nil
+                        }
+                    )
+                    .navigationTitle(group.metadata.name)
+                    #if os(iOS)
+                    .navigationBarTitleDisplayMode(.inline)
+                    #endif
+                } else {
+                    UnavailableDetailView()
+                        .navigationTitle("Подробности")
+                }
+            }
+        }
+    }
 }
 
-private struct AddProfileImportSheet: View {
+private struct ProfileDetailScreen: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var viewModel: ClientViewModel
+
+    var body: some View {
+        ProfileEditorView(
+            profile: $viewModel.draft,
+            useSystemProxy: $viewModel.useSystemProxy,
+            selectedNetworkService: $viewModel.selectedNetworkService,
+            networkServices: viewModel.networkServices,
+            validationMessage: viewModel.validationMessage,
+            onCommit: viewModel.saveDraft
+        )
+        .navigationTitle(viewModel.selectedProfileName)
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Готово") {
+                    viewModel.saveDraft()
+                    dismiss()
+                }
+            }
+        }
+    }
+}
+
+private struct ProfileSettingsScreen: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var viewModel: ClientViewModel
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("SOCKS") {
+                    HStack {
+                        TextField("Порт", value: $viewModel.draft.socksPort, format: .number)
+                            .frame(maxWidth: 110)
+                            #if os(iOS)
+                            .keyboardType(.numberPad)
+                            #endif
+                        Stepper("Порт", value: $viewModel.draft.socksPort, in: 1...65_535)
+                            .labelsHidden()
+
+                        if !PortAvailability.isLocalTCPPortAvailable(viewModel.draft.socksPort) {
+                            Button {
+                                viewModel.draft.socksPort = PortAvailability.nextAvailableTCPPort(
+                                    startingAt: viewModel.draft.socksPort
+                                )
+                                viewModel.saveDraft()
+                            } label: {
+                                Label("Свободный порт", systemImage: "wand.and.stars")
+                            }
+                        }
+                    }
+
+                    TextField("Имя пользователя", text: $viewModel.draft.socksUser)
+                        .settingsPlainInput()
+                        .onSubmit(viewModel.saveDraft)
+
+                    SecureField("Пароль", text: $viewModel.draft.socksPass)
+                        .settingsPlainInput()
+                        .onSubmit(viewModel.saveDraft)
+                }
+
+                #if os(macOS)
+                Section("Системный прокси") {
+                    Toggle("Направлять системный трафик через SOCKS", isOn: $viewModel.useSystemProxy)
+
+                    Picker("Сетевой сервис", selection: $viewModel.selectedNetworkService) {
+                        ForEach(viewModel.networkServices, id: \.self) { service in
+                            Text(service).tag(service)
+                        }
+                    }
+                    .disabled(!viewModel.useSystemProxy)
+                }
+                #elseif os(iOS)
+                Section("VPN") {
+                    Toggle("Направлять системный трафик через VPN", isOn: $viewModel.useSystemProxy)
+                }
+                #endif
+
+                Section("Запуск") {
+                    TextField("DNS-сервер", text: $viewModel.draft.dnsServer)
+                        .settingsPlainInput()
+                        .onSubmit(viewModel.saveDraft)
+
+                    Toggle("Подробный журнал", isOn: $viewModel.draft.debugLogging)
+
+                    Stepper(value: $viewModel.draft.startTimeoutMillis, in: 10_000...300_000, step: 5_000) {
+                        LabeledContent("Таймаут запуска", value: "\(viewModel.draft.startTimeoutMillis / 1_000)s")
+                    }
+                }
+            }
+            .formStyle(.grouped)
+            .navigationTitle("Настройки")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Готово") {
+                        viewModel.saveDraft()
+                        dismiss()
+                    }
+                }
+            }
+            .onDisappear(perform: viewModel.saveDraft)
+        }
+    }
+}
+
+private enum DetailDestination: Identifiable {
+    case profile(UUID)
+    case subscription(UUID)
+
+    var id: String {
+        switch self {
+        case .profile(let id): "profile-\(id.uuidString)"
+        case .subscription(let id): "subscription-\(id.uuidString)"
+        }
+    }
+}
+
+private struct ProfilesHomeView: View {
+    @ObservedObject var viewModel: ClientViewModel
+    let subscriptionGroups: [SubscriptionGroup]
+    let ungroupedProfiles: [ConnectionProfile]
+    let onShowProfileDetails: (ConnectionProfile) -> Void
+    let onShowSubscriptionDetails: (SubscriptionGroup) -> Void
+    let onRefreshSubscription: (UUID) -> Void
+    let onDeleteSubscription: (UUID) -> Void
+
+    var body: some View {
+        List {
+            Section {
+                ConnectionPanel(viewModel: viewModel)
+                    #if os(iOS)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                    #endif
+            }
+
+            if !ungroupedProfiles.isEmpty {
+                Section("Профили") {
+                    ForEach(ungroupedProfiles) { profile in
+                        ProfileSelectionRow(
+                            profile: profile,
+                            isSelected: viewModel.selectedProfileID == profile.id,
+                            onSelect: { viewModel.selectProfile(profile.id) },
+                            onInfo: { onShowProfileDetails(profile) }
+                        )
+                        .swipeActions {
+                            Button("Удалить", role: .destructive) {
+                                viewModel.deleteProfiles(ids: [profile.id])
+                            }
+                        }
+                    }
+                    .onDelete { offsets in
+                        let ids = offsets.compactMap { ungroupedProfiles.indices.contains($0) ? ungroupedProfiles[$0].id : nil }
+                        viewModel.deleteProfiles(ids: ids)
+                    }
+                }
+            }
+
+            ForEach(Array(subscriptionGroups.enumerated()), id: \.element.id) { index, group in
+                Section {
+                    SubscriptionSelectionRow(
+                        group: group,
+                        isRefreshing: viewModel.refreshingSubscriptionIDs.contains(group.id),
+                        onRefresh: { onRefreshSubscription(group.id) },
+                        onInfo: { onShowSubscriptionDetails(group) }
+                    )
+                    .swipeActions {
+                        Button("Удалить", role: .destructive) {
+                            onDeleteSubscription(group.id)
+                        }
+                    }
+
+                    ForEach(group.profiles) { profile in
+                        ProfileSelectionRow(
+                            profile: profile,
+                            isSelected: viewModel.selectedProfileID == profile.id,
+                            onSelect: { viewModel.selectProfile(profile.id) },
+                            onInfo: { onShowProfileDetails(profile) }
+                        )
+                        .swipeActions {
+                            Button("Удалить", role: .destructive) {
+                                viewModel.deleteProfiles(ids: [profile.id])
+                            }
+                        }
+                    }
+                } header: {
+                    if index == 0 {
+                        Text("Подписки")
+                    }
+                }
+            }
+        }
+        #if os(iOS)
+        .listStyle(.insetGrouped)
+        #else
+        .listStyle(.inset)
+        #endif
+    }
+}
+
+private struct ConnectionPanel: View {
+    @ObservedObject var viewModel: ClientViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    StatusBadge(status: viewModel.status)
+
+                    if viewModel.selectedProfileID != nil {
+                        Text(connectionDetail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.72)
+                            .allowsTightening(true)
+                    }
+                }
+                .layoutPriority(1)
+
+                Spacer(minLength: 8)
+
+                connectionButton
+            }
+
+            if let validationMessage = viewModel.validationMessage, viewModel.selectedProfileID != nil {
+                Label(validationMessage, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var connectionButton: some View {
+        if viewModel.status.isRunning {
+            Button(action: viewModel.stop) {
+                Image(systemName: "power")
+                    .font(.system(size: 20, weight: .semibold))
+                    .frame(width: 46, height: 36)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
+            .accessibilityLabel("Отключить")
+            .disabled(viewModel.status == .stopping)
+        } else {
+            Button(action: viewModel.start) {
+                Image(systemName: "power")
+                    .font(.system(size: 20, weight: .semibold))
+                    .frame(width: 46, height: 36)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.regular)
+            .accessibilityLabel("Подключить")
+            .disabled(!viewModel.canStart)
+        }
+    }
+
+    private var connectionDetail: String {
+        [
+            viewModel.selectedProfileName,
+            viewModel.draft.carrier.title,
+            viewModel.draft.transport.title,
+        ].joined(separator: " · ")
+    }
+}
+
+private struct EmptyProfilesView: View {
+    let onAddProfile: () -> Void
+    let onImportProfile: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Spacer(minLength: 32)
+
+            Image(systemName: "person.crop.circle.badge.plus")
+                .font(.system(size: 46, weight: .regular))
+                .foregroundStyle(.secondary)
+
+            VStack(spacing: 6) {
+                Text("Профилей пока нет")
+                    .font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+
+                Text("Импортируйте подписку или добавьте профиль вручную.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(spacing: 10) {
+                Button(action: onImportProfile) {
+                    Label("Импортировать", systemImage: "square.and.arrow.down")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button(action: onAddProfile) {
+                    Label("Добавить вручную", systemImage: "plus")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+            }
+            .frame(maxWidth: 320)
+
+            Spacer(minLength: 32)
+        }
+        .padding(.horizontal, 28)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct ImportProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var importText = ""
 
@@ -207,47 +532,54 @@ private struct AddProfileImportSheet: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Add profile")
-                .font(.headline)
+        NavigationStack {
+            Form {
+                Section {
+                    ZStack(alignment: .topLeading) {
+                        TextField("", text: $importText, axis: .vertical)
+                            .lineLimit(5...10)
+                            .textFieldStyle(.plain)
+                            #if os(iOS)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            #endif
+                            .onSubmit(importValue)
 
-            ZStack(alignment: .topLeading) {
-                TextField("", text: $importText, axis: .vertical)
-                    .lineLimit(4...8)
-                    .textFieldStyle(.plain)
-                    #if os(iOS)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    #endif
-                    .onSubmit(importValue)
-
-                if importText.isEmpty {
-                    Text("olcrtc://, subscription URL, or sub.md text")
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(3)
-                        .allowsHitTesting(false)
+                        if importText.isEmpty {
+                            Text("Вставьте olcRTC-ссылку, URL подписки или текст sub.md")
+                                .foregroundStyle(.tertiary)
+                                .lineLimit(3)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .font(.body)
+                    .frame(minHeight: 120, alignment: .topLeading)
+                } footer: {
+                    Text("Поддерживаются olcrtc://, http/https-ссылки на подписку и содержимое sub.md.")
                 }
             }
-            .font(.body)
-            .padding(10)
-            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
-
-            HStack {
-                Spacer()
-                Button("Cancel", role: .cancel) {
-                    dismiss()
+            .formStyle(.grouped)
+            .navigationTitle("Импорт")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Отмена", role: .cancel) {
+                        dismiss()
+                    }
                 }
 
-                Button(action: importValue) {
-                    ImportLabel(isImporting: isImporting)
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: importValue) {
+                        ImportLabel(isImporting: isImporting)
+                    }
+                    .disabled(!canImport)
                 }
-                .disabled(!canImport)
-                .buttonStyle(.borderedProminent)
             }
         }
-        .padding()
         #if os(macOS)
-        .frame(width: 460)
+        .frame(width: 500, height: 320)
         #endif
     }
 
@@ -267,9 +599,9 @@ private struct ImportLabel: View {
 
     var body: some View {
         if isImporting {
-            Label("Importing", systemImage: "arrow.triangle.2.circlepath")
+            Label("Импорт...", systemImage: "arrow.triangle.2.circlepath")
         } else {
-            Label("Import", systemImage: "square.and.arrow.down")
+            Label("Импортировать", systemImage: "square.and.arrow.down")
         }
     }
 }
@@ -281,129 +613,289 @@ private struct SubscriptionGroup: Identifiable {
     var id: UUID { metadata.id }
 }
 
-private struct SubscriptionHeader: View {
+private struct SubscriptionSelectionRow: View {
     let group: SubscriptionGroup
     let isRefreshing: Bool
     let onRefresh: () -> Void
-    let onDelete: () -> Void
+    let onInfo: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             SubscriptionMarker(metadata: group.metadata)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(group.metadata.name)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    .font(.body.weight(.semibold))
                     .lineLimit(1)
 
-                HStack(spacing: 6) {
-                    Text("\(group.profiles.count) servers")
-                    if let available = group.metadata.available {
-                        Text(available)
-                    }
-                }
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+                Text(subscriptionDetail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             .layoutPriority(1)
 
-            Spacer()
+            Spacer(minLength: 8)
 
-            SubscriptionActionButton(
-                systemImage: isRefreshing ? "arrow.triangle.2.circlepath" : "arrow.clockwise",
-                accessibilityLabel: "Refresh subscription",
-                action: onRefresh
-            )
-            .disabled(isRefreshing || group.metadata.sourceURL == nil)
+            Button(action: onRefresh) {
+                Image(systemName: isRefreshing ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
+                    .font(.system(size: 17, weight: .medium))
+                    .frame(width: 34, height: 34)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
             .foregroundStyle(.secondary)
-            .help(group.metadata.sourceURL == nil ? "Subscription has no source URL" : "Refresh subscription")
+            .disabled(isRefreshing || group.metadata.sourceURL == nil)
+            .accessibilityLabel("Обновить подписку")
 
-            SubscriptionActionButton(
-                systemImage: "trash",
-                accessibilityLabel: "Delete subscription",
-                action: onDelete
-            )
-            .foregroundStyle(.red)
-            .help("Delete subscription")
+            InfoButton(action: onInfo)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var subscriptionDetail: String {
+        let serverTitle = pluralizedServers(group.profiles.count)
+        if let available = group.metadata.available {
+            return "\(serverTitle) · \(available)"
+        }
+        return serverTitle
+    }
+}
+
+private struct ProfileSelectionRow: View {
+    let profile: ConnectionProfile
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onInfo: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: onSelect) {
+                HStack(spacing: 12) {
+                    SubscriptionMarker(metadata: profile.subscription, fallbackSystemImage: "network")
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(profile.displayName)
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+
+                        Text(profile.listDetail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.72)
+                            .allowsTightening(true)
+                    }
+                    .layoutPriority(1)
+
+                    Spacer(minLength: 8)
+
+                    SelectionIndicator(isSelected: isSelected)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            InfoButton(action: onInfo)
         }
         .padding(.vertical, 4)
     }
 }
 
-private struct SubscriptionActionButton: View {
-    let systemImage: String
-    let accessibilityLabel: String
+private struct SelectionIndicator: View {
+    let isSelected: Bool
+
+    var body: some View {
+        Group {
+            if isSelected {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.tint)
+            } else {
+                Color.clear
+            }
+        }
+        .font(.system(size: 18, weight: .medium))
+        .frame(width: 34, height: 34)
+        .contentShape(Rectangle())
+    }
+}
+
+private struct InfoButton: View {
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: systemImage)
-                #if os(iOS)
-                .font(.system(size: 18, weight: .semibold))
-                .frame(width: 40, height: 40)
-                #else
-                .font(.system(size: 13, weight: .semibold))
-                .frame(width: 26, height: 26)
-                #endif
+            Image(systemName: "info.circle")
+                .font(.system(size: 18, weight: .medium))
+                .frame(width: 34, height: 34)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(accessibilityLabel)
+        .foregroundStyle(.secondary)
+        .accessibilityLabel("Подробности")
     }
 }
 
-private struct SelectableProfileRow: View {
-    let profile: ConnectionProfile
+private struct ImportErrorBanner: View {
+    let message: String
+    let onDismiss: () -> Void
 
     var body: some View {
-        #if os(iOS)
-        NavigationLink(value: profile.id) {
-            ProfileRow(profile: profile)
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+
+            Text(message)
+                .font(.callout.weight(.medium))
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Закрыть")
         }
-        #else
-        ProfileRow(profile: profile)
-        #endif
+        .padding(.vertical, 12)
+        .padding(.leading, 14)
+        .padding(.trailing, 8)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .shadow(color: .black.opacity(0.16), radius: 16, x: 0, y: 8)
     }
 }
 
-private struct ProfileRow: View {
-    let profile: ConnectionProfile
+private struct SubscriptionDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var sourceURL: String
+
+    let group: SubscriptionGroup
+    let isRefreshing: Bool
+    let onRefresh: () -> Void
+    let onUpdateSource: (String?) -> Void
+    let onDelete: () -> Void
+
+    init(
+        group: SubscriptionGroup,
+        isRefreshing: Bool,
+        onRefresh: @escaping () -> Void,
+        onUpdateSource: @escaping (String?) -> Void,
+        onDelete: @escaping () -> Void
+    ) {
+        self.group = group
+        self.isRefreshing = isRefreshing
+        self.onRefresh = onRefresh
+        self.onUpdateSource = onUpdateSource
+        self.onDelete = onDelete
+        _sourceURL = State(initialValue: group.metadata.sourceURL ?? "")
+    }
 
     var body: some View {
-        HStack(spacing: 8) {
-            SubscriptionMarker(metadata: profile.subscription, fallbackSystemImage: "network")
+        Form {
+            Section("Подписка") {
+                LabeledContent("Название", value: group.metadata.name)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(profile.name.isEmpty ? "Untitled profile" : profile.name)
-                    .font(.body.weight(.medium))
-                    .lineLimit(1)
+                TextField("Источник", text: $sourceURL)
+                    .settingsPlainInput()
+                    .onSubmit(saveSourceAndRefresh)
 
-                if let detail {
-                    Text(detail)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                LabeledContent("Серверы", value: "\(group.profiles.count)")
+
+                if let available = group.metadata.available {
+                    LabeledContent("Доступно", value: available)
+                }
+
+                if let used = group.metadata.used {
+                    LabeledContent("Использовано", value: used)
+                }
+            }
+
+            Section("Действия") {
+                Button {
+                    saveSourceAndRefresh()
+                } label: {
+                    Label(isRefreshing ? "Обновление..." : "Обновить подписку", systemImage: "arrow.clockwise")
+                }
+                .disabled(isRefreshing || sourceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Button {
+                    saveSourceAndRefresh()
+                } label: {
+                    Label("Сохранить источник и обновить", systemImage: "square.and.arrow.down")
+                }
+                .disabled(isRefreshing || sourceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Button(role: .destructive) {
+                    onDelete()
+                    dismiss()
+                } label: {
+                    Label("Удалить подписку", systemImage: "trash")
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Готово") {
+                    dismiss()
                 }
             }
         }
     }
 
-    private var detail: String? {
-        guard let subscription = profile.subscription else {
-            return nil
+    private func saveSourceAndRefresh() {
+        let normalizedSourceURL = sourceURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedSourceURL.isEmpty else {
+            return
         }
 
-        var values: [String] = []
-        if let ip = subscription.nodeIP {
-            values.append(ip)
+        onUpdateSource(normalizedSourceURL)
+        onRefresh()
+    }
+}
+
+private struct UnavailableDetailView: View {
+    var body: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 36))
+                .foregroundStyle(.secondary)
+            Text("Данные недоступны")
+                .font(.headline)
+            Text("Объект был удален или обновлен.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
-        values.append("\(profile.carrier.title) / \(profile.transport.title)")
-        if let available = subscription.nodeAvailable {
-            values.append(available)
+        .multilineTextAlignment(.center)
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct LogScreen: View {
+    @Environment(\.dismiss) private var dismiss
+    let logs: [String]
+    let onClear: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            LogView(logs: logs, onClear: onClear)
+                .navigationTitle("Журнал")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Готово") {
+                            dismiss()
+                        }
+                    }
+                }
         }
-        return values.joined(separator: " · ")
     }
 }
 
@@ -413,9 +905,9 @@ private struct SubscriptionMarker: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: 5)
                 .fill(markerColor.opacity(0.18))
-                .frame(width: 22, height: 22)
+                .frame(width: 28, height: 28)
 
             if let icon = metadata?.nodeIcon ?? metadata?.icon, !icon.isEmpty {
                 Text(icon)
@@ -423,72 +915,15 @@ private struct SubscriptionMarker: View {
                     .lineLimit(1)
             } else {
                 Image(systemName: fallbackSystemImage)
-                    .font(.caption)
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(markerColor)
             }
         }
-        .frame(width: 22, height: 22)
+        .frame(width: 28, height: 28)
     }
 
     private var markerColor: Color {
         Color(hex: metadata?.nodeColor ?? metadata?.color) ?? .accentColor
-    }
-}
-
-private struct ClientHeaderView: View {
-    @ObservedObject var viewModel: ClientViewModel
-
-    var body: some View {
-        #if os(iOS)
-        HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(viewModel.selectedProfileName)
-                    .font(.headline.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                StatusBadge(status: viewModel.status)
-            }
-
-            Spacer(minLength: 8)
-
-            Button(action: viewModel.stop) {
-                Label("Stop", systemImage: "stop.fill")
-            }
-            .disabled(!viewModel.status.isRunning)
-
-            Button(action: viewModel.start) {
-                Label("Start", systemImage: "play.fill")
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(!viewModel.canStart)
-        }
-        .font(.subheadline)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        #else
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(viewModel.selectedProfileName)
-                    .font(.title2.weight(.semibold))
-                    .lineLimit(1)
-                StatusBadge(status: viewModel.status)
-            }
-
-            Spacer()
-
-            Button(action: viewModel.stop) {
-                Label("Stop", systemImage: "stop.fill")
-            }
-            .disabled(!viewModel.status.isRunning)
-
-            Button(action: viewModel.start) {
-                Label("Start", systemImage: "play.fill")
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(!viewModel.canStart)
-        }
-        .padding()
-        #endif
     }
 }
 
@@ -503,6 +938,7 @@ private struct StatusBadge: View {
             Text(title)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
         .accessibilityElement(children: .combine)
     }
@@ -510,9 +946,9 @@ private struct StatusBadge: View {
     private var title: String {
         switch status {
         case .failed(let message):
-            message.isEmpty ? status.title : "\(status.title): \(message)"
+            message.isEmpty ? "Ошибка" : "Ошибка: \(message)"
         default:
-            status.title
+            status.localizedTitle
         }
     }
 
@@ -523,6 +959,75 @@ private struct StatusBadge: View {
         case .ready: .green
         case .failed: .red
         }
+    }
+}
+
+private func pluralizedServers(_ count: Int) -> String {
+    let mod10 = count % 10
+    let mod100 = count % 100
+    let word: String
+    if mod10 == 1 && mod100 != 11 {
+        word = "сервер"
+    } else if (2...4).contains(mod10) && !(12...14).contains(mod100) {
+        word = "сервера"
+    } else {
+        word = "серверов"
+    }
+    return "\(count) \(word)"
+}
+
+private extension ConnectionProfile {
+    var displayName: String {
+        name.isEmpty ? "Без названия" : name
+    }
+
+    var listDetail: String {
+        var values: [String] = []
+        if let ip = subscription?.nodeIP {
+            values.append(ip)
+        }
+        values.append("\(carrier.title) · \(transport.title)")
+        if let available = subscription?.nodeAvailable {
+            values.append(available)
+        }
+        return values.joined(separator: " · ")
+    }
+}
+
+private extension ClientStatus {
+    var localizedTitle: String {
+        switch self {
+        case .stopped: "Отключено"
+        case .starting: "Подключение..."
+        case .ready: "Подключено"
+        case .stopping: "Отключение..."
+        case .failed: "Ошибка"
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func logPresentation<Content: View>(
+        isPresented: Binding<Bool>,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        #if os(iOS)
+        self.fullScreenCover(isPresented: isPresented, content: content)
+        #else
+        self.sheet(isPresented: isPresented, content: content)
+        #endif
+    }
+
+    @ViewBuilder
+    func settingsPlainInput() -> some View {
+        #if os(iOS)
+        self
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+        #else
+        self
+        #endif
     }
 }
 

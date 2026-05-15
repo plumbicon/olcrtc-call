@@ -22,6 +22,7 @@ public final class ClientViewModel: ObservableObject {
     @Published public var selectedNetworkService = "Wi-Fi"
     @Published public private(set) var networkServices: [String] = ["Wi-Fi"]
     @Published public private(set) var isImporting = false
+    @Published public private(set) var importErrorMessage: String?
     @Published public private(set) var refreshingSubscriptionIDs: Set<UUID> = []
 
     private let engine: OlcRTCEngine
@@ -81,10 +82,10 @@ public final class ClientViewModel: ObservableObject {
 
     public var selectedProfileName: String {
         guard selectedProfileID != nil else {
-            return "No profile"
+            return "Нет профиля"
         }
 
-        return draft.name.isEmpty ? "Untitled profile" : draft.name
+        return draft.name.isEmpty ? "Без названия" : draft.name
     }
 
     public var canStart: Bool {
@@ -110,7 +111,7 @@ public final class ClientViewModel: ObservableObject {
         saveDraft()
 
         var profile = ConnectionProfile.empty
-        profile.name = "Profile \(profiles.count + 1)"
+        profile.name = "Профиль \(profiles.count + 1)"
         profiles.append(profile)
         selectedProfileID = profile.id
         draft = profile
@@ -146,12 +147,12 @@ public final class ClientViewModel: ObservableObject {
         saveDraft()
 
         guard let metadata = profiles.compactMap(\.subscription).first(where: { $0.id == id }) else {
-            appendLog("Subscription refresh failed: subscription was not found.")
+            appendLog("Не удалось обновить подписку: подписка не найдена.")
             return
         }
 
         guard let sourceURLValue = metadata.sourceURL, let sourceURL = URL(string: sourceURLValue) else {
-            appendLog("Subscription \(metadata.name) does not have a source URL.")
+            appendLog("У подписки \(metadata.name) нет ссылки для обновления.")
             return
         }
 
@@ -168,9 +169,24 @@ public final class ClientViewModel: ObservableObject {
                 let content = try await fetchSubscription(from: sourceURL)
                 try refreshSubscription(content, sourceURL: sourceURL, existingSubscriptionID: id)
             } catch {
-                appendLog("Subscription refresh failed: \(error.localizedDescription)")
+                appendLog("Не удалось обновить подписку: \(error.localizedDescription)")
             }
         }
+    }
+
+    public func updateSubscriptionSource(_ id: UUID, sourceURL: String?) {
+        let normalizedURL = sourceURL?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let storedURL = normalizedURL?.isEmpty == true ? nil : normalizedURL
+
+        for index in profiles.indices where profiles[index].subscription?.id == id {
+            profiles[index].subscription?.sourceURL = storedURL
+        }
+
+        if draft.subscription?.id == id {
+            draft.subscription?.sourceURL = storedURL
+        }
+
+        persistProfiles()
     }
 
     public func importValue(_ value: String) {
@@ -182,6 +198,7 @@ public final class ClientViewModel: ObservableObject {
         importTask?.cancel()
         importTask = Task { [weak self] in
             guard let self else { return }
+            importErrorMessage = nil
             isImporting = true
             defer { isImporting = false }
 
@@ -199,13 +216,16 @@ public final class ClientViewModel: ObservableObject {
 
                 try importSubscription(value, sourceURL: nil)
             } catch {
-                appendLog("Import failed: \(error.localizedDescription)")
+                let message = "Не удалось импортировать подписку: \(error.localizedDescription)"
+                importErrorMessage = message
+                appendLog(message)
             }
         }
     }
 
     public func importURI(_ value: String) {
         do {
+            importErrorMessage = nil
             saveDraft()
             var profile = try uriParser.parse(value, into: .empty)
             profile.id = UUID()
@@ -215,10 +235,16 @@ public final class ClientViewModel: ObservableObject {
             selectedProfileID = profile.id
             draft = profile
             persistProfiles()
-            appendLog("Imported olcRTC profile link.")
+            appendLog("Импортирована olcRTC-ссылка профиля.")
         } catch {
-            appendLog("Import failed: \(error.localizedDescription)")
+            let message = "Не удалось импортировать профиль: \(error.localizedDescription)"
+            importErrorMessage = message
+            appendLog(message)
         }
+    }
+
+    public func clearImportError() {
+        importErrorMessage = nil
     }
 
     public func saveDraft() {
@@ -237,7 +263,7 @@ public final class ClientViewModel: ObservableObject {
         var profileToStart = draft.normalizedForCurrentDefaults()
         let availableSocksPort = PortAvailability.nextAvailableTCPPort(startingAt: profileToStart.socksPort)
         if availableSocksPort != profileToStart.socksPort {
-            appendLog("SOCKS port \(profileToStart.socksPort) is busy; using \(availableSocksPort).")
+            appendLog("SOCKS-порт \(profileToStart.socksPort) занят; используется \(availableSocksPort).")
             profileToStart.socksPort = availableSocksPort
         }
         if profileToStart != draft {
@@ -247,7 +273,7 @@ public final class ClientViewModel: ObservableObject {
 
         if let validationMessage = validate(profile: profileToStart) {
             status = .failed(validationMessage)
-            appendLog("Profile is incomplete: \(validationMessage)")
+            appendLog("Профиль заполнен не полностью: \(validationMessage)")
             return
         }
 
@@ -261,7 +287,7 @@ public final class ClientViewModel: ObservableObject {
         let options = OlcRTCStartOptions(profile: profileToStart)
         status = .starting
         runningMode = .localProxy
-        appendLog("Starting \(selectedProfileName).")
+        appendLog("Подключение: \(selectedProfileName).")
 
         startTask = Task { [weak self] in
             guard let self else { return }
@@ -277,7 +303,7 @@ public final class ClientViewModel: ObservableObject {
                     saveDraft()
                 }
                 status = .ready
-                appendLog("SOCKS proxy is ready at 127.0.0.1:\(activePort).")
+                appendLog("SOCKS-прокси готов на 127.0.0.1:\(activePort).")
                 #if os(iOS)
                 startLocalProxyBackgroundRuntime()
                 #endif
@@ -285,7 +311,7 @@ public final class ClientViewModel: ObservableObject {
             } catch {
                 runningMode = nil
                 status = .failed(error.localizedDescription)
-                appendLog("Start failed: \(error.localizedDescription)")
+                appendLog("Не удалось подключиться: \(error.localizedDescription)")
                 #if os(iOS)
                 backgroundRuntimeKeeper.stop()
                 #endif
@@ -297,7 +323,7 @@ public final class ClientViewModel: ObservableObject {
     public func stop() {
         startTask?.cancel()
         status = .stopping
-        appendLog("Stopping \(selectedProfileName).")
+        appendLog("Отключение: \(selectedProfileName).")
 
         Task { [weak self] in
             guard let self else { return }
@@ -305,7 +331,7 @@ public final class ClientViewModel: ObservableObject {
             #if os(iOS)
             case .packetTunnel:
                 await packetTunnelManager.stop()
-                appendLog("iOS VPN tunnel stopped.")
+                appendLog("iOS VPN-туннель остановлен.")
             #endif
             case .localProxy, nil:
                 #if os(iOS)
@@ -371,7 +397,7 @@ public final class ClientViewModel: ObservableObject {
             draft = firstProfile
         }
         persistProfiles()
-        appendLog("Imported subscription \(imported.name) with \(imported.profiles.count) server(s).")
+        appendLog("Импортирована подписка \(imported.name): \(imported.profiles.count) сервер(ов).")
     }
 
     private func refreshSubscription(_ value: String, sourceURL: URL, existingSubscriptionID: UUID) throws {
@@ -430,10 +456,10 @@ public final class ClientViewModel: ObservableObject {
 
         persistProfiles()
         appendLog(
-            "Refreshed subscription \(imported.name): " +
-            "\(matchedExistingIDs.count) updated, " +
-            "\(refreshedProfiles.count - matchedExistingIDs.count) added, " +
-            "\(deletedIDs.count) removed."
+            "Подписка \(imported.name) обновлена: " +
+            "\(matchedExistingIDs.count) обновлено, " +
+            "\(refreshedProfiles.count - matchedExistingIDs.count) добавлено, " +
+            "\(deletedIDs.count) удалено."
         )
     }
 
@@ -513,7 +539,7 @@ public final class ClientViewModel: ObservableObject {
     }
 
     private func fetchSubscription(from url: URL) async throws -> String {
-        appendLog("Loading subscription from \(url.absoluteString).")
+        appendLog("Загрузка подписки: \(url.absoluteString).")
         do {
             return try await subscriptionFetcher.fetchWithURLSession(from: url)
         } catch {
@@ -523,11 +549,11 @@ public final class ClientViewModel: ObservableObject {
                 throw error
             }
 
-            appendLog("DNS lookup failed for \(host); retrying with DNS-over-HTTPS.")
+            appendLog("DNS-запрос для \(host) не прошел; повтор через DNS-over-HTTPS.")
             do {
                 return try await subscriptionFetcher.fetchThroughResolvedEndpoint(from: url)
             } catch {
-                appendLog("DNS-over-HTTPS retry failed: \(error.localizedDescription)")
+                appendLog("Повтор через DNS-over-HTTPS не прошел: \(error.localizedDescription)")
                 throw error
             }
         }
@@ -566,16 +592,16 @@ public final class ClientViewModel: ObservableObject {
     private func startLocalProxyBackgroundRuntime() {
         do {
             try backgroundRuntimeKeeper.start()
-            appendLog("iOS background runtime is active for local SOCKS.")
+            appendLog("Фоновый режим iOS активен для локального SOCKS.")
         } catch {
-            appendLog("iOS background runtime failed: \(error.localizedDescription)")
+            appendLog("Не удалось включить фоновый режим iOS: \(error.localizedDescription)")
         }
     }
 
     private func startPacketTunnel(profile: ConnectionProfile) {
         status = .starting
         runningMode = .packetTunnel
-        appendLog("Starting \(selectedProfileName) with iOS VPN.")
+        appendLog("Подключение \(selectedProfileName) через iOS VPN.")
 
         startTask = Task { [weak self] in
             guard let self else { return }
@@ -583,11 +609,11 @@ public final class ClientViewModel: ObservableObject {
             do {
                 try await packetTunnelManager.start(profile: profile)
                 status = .ready
-                appendLog("iOS VPN tunnel is connected. System traffic is routed through olcRTC.")
+                appendLog("iOS VPN-туннель подключен. Системный трафик идет через olcRTC.")
             } catch {
                 runningMode = nil
                 status = .failed(error.localizedDescription)
-                appendLog("VPN start failed: \(vpnStartFailureMessage(error))")
+                appendLog("Не удалось запустить VPN: \(vpnStartFailureMessage(error))")
                 await packetTunnelManager.stop()
             }
         }
@@ -610,18 +636,18 @@ public final class ClientViewModel: ObservableObject {
     private func enableSystemProxyIfNeeded(port: Int) async {
         #if os(macOS)
         guard useSystemProxy else {
-            appendLog("System SOCKS proxy is off. Configure apps manually to use 127.0.0.1:\(port).")
+            appendLog("Системный SOCKS-прокси выключен. Настройте приложения вручную на 127.0.0.1:\(port).")
             return
         }
 
         do {
             try await systemProxyManager.enable(service: selectedNetworkService, host: "127.0.0.1", port: port)
-            appendLog("System SOCKS proxy enabled for \(selectedNetworkService) on 127.0.0.1:\(port).")
+            appendLog("Системный SOCKS-прокси включен для \(selectedNetworkService) на 127.0.0.1:\(port).")
         } catch {
-            appendLog("System proxy setup failed: \(error.localizedDescription)")
+            appendLog("Не удалось настроить системный прокси: \(error.localizedDescription)")
         }
         #else
-        appendLog("iOS system traffic is not routed automatically. Configure apps manually to use 127.0.0.1:\(port).")
+        appendLog("Системный трафик iOS не перенаправляется автоматически. Настройте приложения вручную на 127.0.0.1:\(port).")
         #endif
     }
 
@@ -633,28 +659,28 @@ public final class ClientViewModel: ObservableObject {
 
         do {
             try await systemProxyManager.disable(service: selectedNetworkService)
-            appendLog("System SOCKS proxy disabled for \(selectedNetworkService).")
+            appendLog("Системный SOCKS-прокси отключен для \(selectedNetworkService).")
         } catch {
-            appendLog("System proxy cleanup failed: \(error.localizedDescription)")
+            appendLog("Не удалось очистить настройки системного прокси: \(error.localizedDescription)")
         }
         #endif
     }
 
     private func validate(profile: ConnectionProfile) -> String? {
         if profile.clientID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Client ID is required."
+            return "Укажите Client ID."
         }
         if profile.keyHex.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Encryption key is required."
+            return "Укажите ключ шифрования."
         }
         if profile.keyHex.count != 64 || !profile.keyHex.allSatisfy(\.isHexDigit) {
-            return "Encryption key must be 64 hexadecimal characters."
+            return "Ключ должен содержать 64 шестнадцатеричных символа."
         }
         if profile.carrier != .jazz && profile.roomID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Room ID is required for this carrier."
+            return "Для этого провайдера нужен Room ID."
         }
         if !(1...65_535).contains(profile.socksPort) {
-            return "SOCKS port must be between 1 and 65535."
+            return "SOCKS-порт должен быть от 1 до 65535."
         }
 
         return nil
