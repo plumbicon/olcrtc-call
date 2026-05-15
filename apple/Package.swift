@@ -39,7 +39,8 @@ let package = Package(
         ),
         .executableTarget(
             name: "OlcRTCClientMac",
-            dependencies: ["OlcRTCClientKit"]
+            dependencies: ["OlcRTCClientKit"],
+            exclude: ["Assets.xcassets"]
         ),
     ] + mobileTargets
 )

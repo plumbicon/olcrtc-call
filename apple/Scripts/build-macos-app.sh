@@ -26,6 +26,7 @@ mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 cp "$SWIFT_BINARY" "$MACOS_DIR/olcRTC"
 cp "$APPLE_DIR/.build/olcrtc-macos" "$RESOURCES_DIR/olcrtc-macos"
 cp -R "$OLCRTC_DIR/data" "$RESOURCES_DIR/data"
+cp "$APPLE_DIR/Resources/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 
 cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -45,6 +46,8 @@ cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
   <string>olcRTC</string>
   <key>CFBundleDisplayName</key>
   <string>olcRTC</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>

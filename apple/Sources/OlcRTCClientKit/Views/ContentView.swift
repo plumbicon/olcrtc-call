@@ -255,22 +255,29 @@ private struct ProfileSettingsScreen: View {
             Form {
                 Section("SOCKS") {
                     HStack {
-                        TextField("Порт", value: $viewModel.draft.socksPort, format: .number)
-                            .frame(maxWidth: 110)
-                            #if os(iOS)
-                            .keyboardType(.numberPad)
-                            #endif
-                        Stepper("Порт", value: $viewModel.draft.socksPort, in: 1...65_535)
-                            .labelsHidden()
+                        Text("Порт")
 
-                        if !PortAvailability.isLocalTCPPortAvailable(viewModel.draft.socksPort) {
-                            Button {
-                                viewModel.draft.socksPort = PortAvailability.nextAvailableTCPPort(
-                                    startingAt: viewModel.draft.socksPort
-                                )
-                                viewModel.saveDraft()
-                            } label: {
-                                Label("Свободный порт", systemImage: "wand.and.stars")
+                        Spacer(minLength: 16)
+
+                        HStack(spacing: 8) {
+                            TextField("", value: $viewModel.draft.socksPort, format: .number)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 78)
+                                #if os(iOS)
+                                .keyboardType(.numberPad)
+                                #endif
+                            Stepper("", value: $viewModel.draft.socksPort, in: 1...65_535)
+                                .labelsHidden()
+
+                            if !PortAvailability.isLocalTCPPortAvailable(viewModel.draft.socksPort) {
+                                Button {
+                                    viewModel.draft.socksPort = PortAvailability.nextAvailableTCPPort(
+                                        startingAt: viewModel.draft.socksPort
+                                    )
+                                    viewModel.saveDraft()
+                                } label: {
+                                    Label("Свободный порт", systemImage: "wand.and.stars")
+                                }
                             }
                         }
                     }
@@ -308,8 +315,19 @@ private struct ProfileSettingsScreen: View {
 
                     Toggle("Подробный журнал", isOn: $viewModel.draft.debugLogging)
 
-                    Stepper(value: $viewModel.draft.startTimeoutMillis, in: 10_000...300_000, step: 5_000) {
-                        LabeledContent("Таймаут запуска", value: "\(viewModel.draft.startTimeoutMillis / 1_000)s")
+                    HStack {
+                        Text("Таймаут запуска")
+
+                        Spacer(minLength: 16)
+
+                        HStack(spacing: 8) {
+                            Text("\(viewModel.draft.startTimeoutMillis / 1_000)s")
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+
+                            Stepper("", value: $viewModel.draft.startTimeoutMillis, in: 10_000...300_000, step: 5_000)
+                                .labelsHidden()
+                        }
                     }
                 }
             }
@@ -575,32 +593,43 @@ private struct EmptyProfilesView: View {
                     .font(.title3.weight(.semibold))
                     .multilineTextAlignment(.center)
 
-                Text("Импортируйте подписку или добавьте профиль вручную.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+                VStack(spacing: 2) {
+                    HStack(spacing: 0) {
+                        InlineTextButton("Импортируйте", action: onImportProfile)
+                        Text(" подписку или ")
+                            .foregroundStyle(.secondary)
+                        InlineTextButton("добавьте", action: onAddProfile)
+                    }
 
-            VStack(spacing: 10) {
-                Button(action: onImportProfile) {
-                    Label("Импортировать", systemImage: "square.and.arrow.down")
-                        .frame(maxWidth: .infinity)
+                    Text("профиль вручную.")
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.borderedProminent)
-
-                Button(action: onAddProfile) {
-                    Label("Добавить вручную", systemImage: "plus")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: 320)
 
             Spacer(minLength: 32)
         }
         .padding(.horizontal, 28)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct InlineTextButton: View {
+    let title: String
+    let action: () -> Void
+
+    init(_ title: String, action: @escaping () -> Void) {
+        self.title = title
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .foregroundStyle(.tint)
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -623,6 +652,7 @@ private struct ImportProfileSheet: View {
                         TextField("", text: $importText, axis: .vertical)
                             .lineLimit(5...10)
                             .textFieldStyle(.plain)
+                            .multilineTextAlignment(.leading)
                             #if os(iOS)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()

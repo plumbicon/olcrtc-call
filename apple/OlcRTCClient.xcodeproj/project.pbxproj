@@ -11,8 +11,10 @@
 		191EDED56EA604111331F927 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29C858F0F48DDBBF5A02159B /* PacketTunnelProvider.swift */; };
 		54839B4CEC6B48030365CC9A /* OlcRTCClientKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0B791DA8B06E667BA4A9E7F0 /* OlcRTCClientKit */; };
 		5728DF6A81002892D16D8ED5 /* OlcRTCClientiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AA020CAE418FD535F4B986 /* OlcRTCClientiOSApp.swift */; };
+		70151045D4DC035E040555D8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EC4456891035C9E8825F52C4 /* Assets.xcassets */; };
 		856D69667A459216B527483A /* OlcRTCClientKit in Frameworks */ = {isa = PBXBuildFile; productRef = 08D1F92BB9E965ACFB7A5894 /* OlcRTCClientKit */; };
 		881DF6CC666EB65EAC2CAF65 /* OlcRTCClientKit in Frameworks */ = {isa = PBXBuildFile; productRef = D5F3BBD13EACE22B926977F5 /* OlcRTCClientKit */; };
+		A180E0114803E9ECDBCA08E9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F6E7ACB8FA591E378C445E87 /* Assets.xcassets */; };
 		D303CE2D1FB6A07BBB037C91 /* OlcRTCClientMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE52694FC78A512E41EB813 /* OlcRTCClientMacApp.swift */; };
 		E9F637C47581562BAA2A27EB /* Tun2SocksKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1BA40AB898933854FDD913FD /* Tun2SocksKit */; };
 /* End PBXBuildFile section */
@@ -53,6 +55,8 @@
 		8B28F34C3D633B298A7C4C1C /* OlcRTCClientiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OlcRTCClientiOS.entitlements; sourceTree = "<group>"; };
 		C2D534576771DFF8A6A00696 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E7B797AB823BAD61B5AD7E22 /* apple */ = {isa = PBXFileReference; lastKnownFileType = folder; name = apple; path = .; sourceTree = SOURCE_ROOT; };
+		EC4456891035C9E8825F52C4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F6E7ACB8FA591E378C445E87 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +131,7 @@
 		CEF36F70EBFF4905AFF63F1A /* OlcRTCClientiOS */ = {
 			isa = PBXGroup;
 			children = (
+				EC4456891035C9E8825F52C4 /* Assets.xcassets */,
 				C2D534576771DFF8A6A00696 /* Info.plist */,
 				8B28F34C3D633B298A7C4C1C /* OlcRTCClientiOS.entitlements */,
 				45AA020CAE418FD535F4B986 /* OlcRTCClientiOSApp.swift */,
@@ -138,6 +143,7 @@
 		FB8BDA304C77D28107ABA828 /* OlcRTCClientMac */ = {
 			isa = PBXGroup;
 			children = (
+				F6E7ACB8FA591E378C445E87 /* Assets.xcassets */,
 				6AE52694FC78A512E41EB813 /* OlcRTCClientMacApp.swift */,
 			);
 			name = OlcRTCClientMac;
@@ -172,6 +178,7 @@
 			buildConfigurationList = 2D9A2F77496D1037BD73FAC7 /* Build configuration list for PBXNativeTarget "OlcRTCClient iOS" */;
 			buildPhases = (
 				2FFF2E43FD0FDA1D4716A2BC /* Sources */,
+				5A4CB1005BCAE5806F7CE5E3 /* Resources */,
 				7F29185BF35D12C2154E0D7C /* Frameworks */,
 				7B653B7CC3345B3319FE1AFE /* Embed Foundation Extensions */,
 			);
@@ -193,6 +200,7 @@
 			buildConfigurationList = 8AB9366A23292DD75AEE293E /* Build configuration list for PBXNativeTarget "OlcRTCClient macOS" */;
 			buildPhases = (
 				2720B452629A0CFB18E271F0 /* Sources */,
+				08B360A5EAACDDD139E5F042 /* Resources */,
 				86959507855EFB095DF275C4 /* Frameworks */,
 			);
 			buildRules = (
@@ -254,6 +262,25 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		08B360A5EAACDDD139E5F042 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A180E0114803E9ECDBCA08E9 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A4CB1005BCAE5806F7CE5E3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				70151045D4DC035E040555D8 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2720B452629A0CFB18E271F0 /* Sources */ = {

@@ -1,7 +1,19 @@
 import SwiftUI
 
 private let profileEditorValueColumnWidth: CGFloat = 200
+#if os(iOS)
+private let profileEditorTextFieldWidth: CGFloat = 148
+private let profileEditorNumberFieldWidth: CGFloat = 56
+private let profileEditorLabelMinWidth: CGFloat = 0
+private let profileEditorRowSpacing: CGFloat = 8
+private let profileEditorSpacerMinLength: CGFloat = 8
+#else
+private let profileEditorTextFieldWidth: CGFloat = profileEditorValueColumnWidth
 private let profileEditorNumberFieldWidth: CGFloat = 64
+private let profileEditorLabelMinWidth: CGFloat = 170
+private let profileEditorRowSpacing: CGFloat = 12
+private let profileEditorSpacerMinLength: CGFloat = 16
+#endif
 private let profileEditorConnectionRowHeight: CGFloat = 46
 private let videoCodecOptions = ["qrcode", "tile"]
 private let videoHardwareOptions = ["none", "nvenc"]
@@ -149,7 +161,7 @@ private struct ConnectionSettingsCard: View {
                     ConnectionTextRow(title: "Client ID", text: $profile.clientID, onCommit: onCommit)
                     Divider()
 
-                    ConnectionSecureRow(title: "64-символьный ключ", text: $profile.keyHex, onCommit: onCommit)
+                    ConnectionSecureRow(title: "Ключ", text: $profile.keyHex, onCommit: onCommit)
 
                     transportRows
                     Divider()
@@ -200,7 +212,7 @@ private struct ConnectionSettingsCard: View {
             ConnectionTextRow(title: "Битрейт", text: $profile.videoBitrate, onCommit: onCommit)
             Divider()
             ConnectionPickerRow(
-                title: "Аппаратное ускорение",
+                title: "Ускорение",
                 selection: $profile.videoHardwareAcceleration,
                 options: videoHardwareOptions
             )
@@ -255,12 +267,13 @@ private struct ConnectionAckTimeoutRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: profileEditorRowSpacing) {
             Text(title)
                 .lineLimit(1)
-                .frame(minWidth: 170, alignment: .leading)
+                .minimumScaleFactor(0.8)
+                .frame(minWidth: profileEditorLabelMinWidth, alignment: .leading)
 
-            Spacer(minLength: 16)
+            Spacer(minLength: profileEditorSpacerMinLength)
 
             HStack(spacing: 8) {
                 TextField("", text: textValue)
@@ -270,10 +283,9 @@ private struct ConnectionAckTimeoutRow: View {
                     .frame(width: 88)
                     .accessibilityLabel(title)
 
-                Stepper("", value: clampedValue, in: range, step: step)
-                    .labelsHidden()
+                CompactValueStepper(value: clampedValue, range: range, step: step)
             }
-            .frame(width: profileEditorValueColumnWidth, height: profileEditorConnectionRowHeight, alignment: .trailing)
+            .frame(height: profileEditorConnectionRowHeight, alignment: .trailing)
         }
         .frame(height: profileEditorConnectionRowHeight, alignment: .center)
     }
@@ -285,12 +297,13 @@ private struct ConnectionPickerRow: View {
     let options: [String]
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: profileEditorRowSpacing) {
             Text(title)
                 .lineLimit(1)
-                .frame(minWidth: 170, alignment: .leading)
+                .minimumScaleFactor(0.8)
+                .frame(minWidth: profileEditorLabelMinWidth, alignment: .leading)
 
-            Spacer(minLength: 16)
+            Spacer(minLength: profileEditorSpacerMinLength)
 
             Picker("", selection: $selection) {
                 ForEach(options, id: \.self) { option in
@@ -298,7 +311,7 @@ private struct ConnectionPickerRow: View {
                 }
             }
             .labelsHidden()
-            .frame(width: profileEditorValueColumnWidth, alignment: .trailing)
+            .frame(maxWidth: profileEditorValueColumnWidth, alignment: .trailing)
         }
         .frame(height: profileEditorConnectionRowHeight)
     }
@@ -310,18 +323,19 @@ private struct ConnectionTextRow: View {
     let onCommit: () -> Void
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: profileEditorRowSpacing) {
             Text(title)
                 .lineLimit(1)
-                .frame(minWidth: 170, alignment: .leading)
+                .minimumScaleFactor(0.8)
+                .frame(minWidth: profileEditorLabelMinWidth, alignment: .leading)
 
-            Spacer(minLength: 16)
+            Spacer(minLength: profileEditorSpacerMinLength)
 
             TextField("", text: $text)
                 .olcPlainInput()
                 .textFieldStyle(.roundedBorder)
                 .multilineTextAlignment(.leading)
-                .frame(width: profileEditorValueColumnWidth)
+                .frame(width: profileEditorTextFieldWidth)
                 .accessibilityLabel(title)
                 .onSubmit(onCommit)
         }
@@ -335,18 +349,19 @@ private struct ConnectionSecureRow: View {
     let onCommit: () -> Void
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: profileEditorRowSpacing) {
             Text(title)
                 .lineLimit(1)
-                .frame(minWidth: 170, alignment: .leading)
+                .minimumScaleFactor(0.8)
+                .frame(minWidth: profileEditorLabelMinWidth, alignment: .leading)
 
-            Spacer(minLength: 16)
+            Spacer(minLength: profileEditorSpacerMinLength)
 
             SecureField("", text: $text)
                 .olcPlainInput()
                 .textFieldStyle(.roundedBorder)
                 .multilineTextAlignment(.leading)
-                .frame(width: profileEditorValueColumnWidth)
+                .frame(width: profileEditorTextFieldWidth)
                 .accessibilityLabel(title)
                 .onSubmit(onCommit)
         }
@@ -371,12 +386,13 @@ private struct ConnectionNumberRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: profileEditorRowSpacing) {
             Text(title)
                 .lineLimit(1)
-                .frame(minWidth: 170, alignment: .leading)
+                .minimumScaleFactor(0.8)
+                .frame(minWidth: profileEditorLabelMinWidth, alignment: .leading)
 
-            Spacer(minLength: 16)
+            Spacer(minLength: profileEditorSpacerMinLength)
 
             HStack(spacing: 8) {
                 TextField("", value: clampedValue, format: .number)
@@ -391,12 +407,53 @@ private struct ConnectionNumberRow: View {
                         .frame(width: 28, alignment: .leading)
                 }
 
-                Stepper("", value: clampedValue, in: range, step: step)
-                    .labelsHidden()
+                CompactValueStepper(value: clampedValue, range: range, step: step)
             }
-            .frame(width: profileEditorValueColumnWidth, alignment: .trailing)
+            .frame(alignment: .trailing)
         }
         .frame(height: profileEditorConnectionRowHeight)
+    }
+}
+
+private struct CompactValueStepper: View {
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    let step: Int
+
+    var body: some View {
+        #if os(iOS)
+        VStack(spacing: 0) {
+            Button {
+                value = min(value + step, range.upperBound)
+            } label: {
+                Image(systemName: "chevron.up")
+                    .font(.system(size: 11, weight: .semibold))
+                    .frame(width: 30, height: 18)
+            }
+            .buttonStyle(.plain)
+            .frame(width: 30, height: 18)
+            .disabled(value >= range.upperBound)
+
+            Divider()
+
+            Button {
+                value = max(value - step, range.lowerBound)
+            } label: {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 11, weight: .semibold))
+                    .frame(width: 30, height: 18)
+            }
+            .buttonStyle(.plain)
+            .frame(width: 30, height: 18)
+            .disabled(value <= range.lowerBound)
+        }
+        .frame(width: 30, height: 37)
+        .fixedSize(horizontal: true, vertical: true)
+        .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        #else
+        Stepper("", value: $value, in: range, step: step)
+            .labelsHidden()
+        #endif
     }
 }
 
