@@ -1,5 +1,9 @@
 # Godwit
 
+<img height="640" alt="Image" src="https://github.com/user-attachments/assets/894840a9-fe5c-47a9-833e-e8d516ef3392" />
+
+<img height="640" alt="Image" src="https://github.com/user-attachments/assets/d8e1ab2b-0c7f-464e-8b2e-ac5b25c8bdcb" />
+
 macOS/iOS-клиент Godwit для olcRTC.
 
 ## Требования
